@@ -1,0 +1,4 @@
+1:10/06/18:rouge:Chianti Classico:2015:Volpaia:26.65:4:Fonce, dense, opaque. Aromes fruits noirs. Tannins charnus.
+2:10/06/18:rouge:Chianti Classico:2014:Volpaia:26.65::
+4:03/07/18:blanc:Alsace:2016:Pfaff:16.50::
+5:03/07/18:rose:Cotes de Provence:2017:Roseline:18.50:3:Frais, leger.

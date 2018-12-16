@@ -1,0 +1,484 @@
+#!/usr/bin/env ruby
+#-*- ruby -*- # Pour etre en mode Ruby dans emacs
+
+require 'gli'
+require 'fileutils'
+
+begin # XXX: Remove this begin/rescue before distributing your app
+  require 'gv'
+rescue LoadError
+  STDERR.puts "In development, you need to use `bundle exec bin/gv` to run your app"
+  STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
+  STDERR.puts "Feel free to remove this message from bin/gv now"
+
+  exit 64
+end
+
+# Des alias, pour alleger le code.
+GV = GestionVins
+ENTREPOT = GestionVins::EntrepotVins
+
+
+# Attributs lies au type de BD utilise.
+BD = BDTexte
+
+# BD textuelle style CSV, avec separateur = ":"
+FORMAT_BD_TEXTE = :csv
+SEPARATEUR_BD_TEXTE = ':'
+DEPOT_DEFAUT = '.vins.txt'     # Fichier par defaut pour depot.
+
+
+# BD textuelle style JSON.
+#FORMAT_BD_TEXTE = :json
+#SEPARATEUR_BD_TEXTE = nil
+#DEPOT_DEFAUT = '.vins.json'
+
+# Injection des dependances pour la BD textuelle.
+BD.config( FORMAT_BD_TEXTE, GestionVins::Vin,
+           separateur: SEPARATEUR_BD_TEXTE,
+           exception_a_signaler: GestionVins::Exception )
+
+
+#############################################################################
+# Specification de l'application avec GLI
+#############################################################################
+
+include GLI::App
+
+program_desc "Application en ligne de commande pour gestion d'une cave a vins"
+version GV::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+preserve_argv  # Pour que ARGV ne soit pas modifie -- utile en cas d'erreur pour le message.
+
+desc 'Depot de donnees a utiliser pour la cave a vins'
+default_value DEPOT_DEFAUT
+flag :depot
+
+desc 'Utilisation de stdin plutot que le depot'
+switch [:stdin, :'']
+
+##############################################################
+# Specifications des diverses commandes
+##############################################################
+
+#=================================
+# Commande init
+#
+# Arguments:  [--detruire]
+#
+# Erreurs:
+#  - le depot existe deja et l'option --detruire n'a pas ete indiquee
+#  - argument(s) en trop
+#=================================
+desc "Cree une nouvelle base de donnees pour gerer des vins (dans './#{DEPOT_DEFAUT}' si --depot n'est pas specifie)"
+skips_pre
+skips_post
+command :init do |init|
+  init.desc 'Detruit le fichier du depot s\'il existe deja'
+  init.switch :detruire
+
+  init.action do |global_options,options,_args|
+    BD.init( global_options[:depot], detruire: options[:detruire] )
+  end
+end
+
+
+#=================================
+# Commande ajouter
+#
+# Arguments: [--qte=99] [--type=chaine] appellation millesime nom prix
+#
+# Valeurs par defaut si options omises:
+#   --qte=1
+#   --type=rouge
+#
+# Erreurs:
+# - depot invalide (- ne peut pas etre utilise)
+# - nombre incorrect d'arguments
+# - nombre invalide pour la quantite
+# - nombre invalide pour le millesime
+# - nombre invalide pour le prix (99.99)
+# - argument(s) en trop
+#=================================
+desc 'Ajoute un vin dans la cave a vins'
+arg_name 'appellation millesime nom prix'
+command :ajouter do |ajouter|
+  ajouter.desc 'Nombre de bouteilles a ajouter'
+  ajouter.flag :qte, must_match: /\b[1-9][0-9]*\b/
+
+  ajouter.desc 'Type de vin a ajouter'
+  ajouter.flag :type
+
+  ajouter.action do |_global_options,options,args|
+    erreur_trop_arguments :ajouter, *args if args.size > 4
+    erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 4
+
+    qte_defaut = options[:qte] || 1
+    type_defaut = options[:type] || :rouge
+
+    vins_a_ajouter(args).each do |qte, type, appellation, millesime, nom, prix|
+      erreur "Nombre invalide pour millesime: #{millesime}" unless GV::Motifs::MILLESIME =~ millesime
+      erreur "Nombre invalide pour prix: #{prix}" unless GV::Motifs::PRIX =~ prix
+
+      qte ||= qte_defaut
+      type ||= type_defaut
+
+      ENTREPOT.ajouter( type, appellation, millesime.to_i, nom, prix.to_f, qte.to_i )
+    end
+  end
+end
+
+
+#=================================
+# Commande supprimer
+#
+# Arguments: num_vin
+#
+# Erreurs:
+# - depot invalide (- ne peut pas etre utilise)
+# - nombre incorrect d'arguments
+# - num_vin inexistant
+# - num_vin deja note
+# - argument(s) en trop
+#=================================
+desc 'Supprime un vin'
+arg_name 'numero_vin'
+command :supprimer do |c|
+  c.action do |_global_options,_options,args|
+    erreur_trop_arguments :supprimer, *args if args.size > 1
+
+    numeros_a_supprimer(args).each do |numero|
+      ENTREPOT.supprimer(numero: numero)
+    end
+  end
+end
+
+#=================================
+# Commande noter
+#
+# Arguments: numero_vin note commentaire
+#
+# Erreurs:
+# - depot invalide (- ne peut pas etre utilise)
+# - nombre incorrect d'arguments
+# - vin avec le numero n'existe pas
+# - vin deja note
+# - nombre invalide pour la note (0 a 5)
+# - argument(s) en trop
+#=================================
+desc 'Note un vin'
+arg_name 'numero_vin note commentaire'
+command :noter do |c|
+  c.action do |_global_options,_options,args|
+
+    erreur_trop_arguments :noter, *args if args.size > 3
+    erreur_nombre_incorrect_arguments :noter, *args if args.size < 3
+
+    numero_vin = args.shift.to_i
+    note = args.shift.to_i
+    commentaire = args.shift
+
+    unless note.between?(GV::Motifs::NOTE_MIN, GV::Motifs::NOTE_MAX)
+      erreur "noter: nombre invalide pour note: #{note}"
+    end
+
+    ENTREPOT.noter(numero_vin, note, commentaire)
+  end
+end
+
+
+#=================================
+# Commande selectionner
+#
+# Arguments: [--bus|--non-bus|--tous] [motif]
+#
+# Valeur par defaut si options et motif omis:
+#   --tous
+#
+# Erreurs:
+#  - argument(s) en trop
+#=================================
+desc 'Selectionne des vins'
+arg_name 'motif'
+skips_post
+command :selectionner do |selectionner|
+  selectionner.desc 'Selectionne les vins bus'
+  selectionner.switch :bus, :negatable => false
+
+  selectionner.desc 'Selectionne les vins non-bus'
+  selectionner.switch :'non-bus', :negatable => false
+
+  selectionner.desc 'Selectionne tous les vins'
+  selectionner.switch :tous, :negatable => false
+
+  selectionner.action do |_global_options,options,args|
+    motif = args.shift
+    erreur_trop_arguments :selectionner, *args unless args.empty?
+
+    bus = options[:bus]
+    non_bus = options[:'non-bus']
+    bus = non_bus = true if options[:tous] || !bus && !non_bus # Rien de specifie => tous!
+
+    emettre_sur_stdout( ENTREPOT.les_vins( bus: bus, non_bus: non_bus, motif: motif ) )
+  end
+end
+
+
+#=================================
+# Commande trier
+#
+# Arguments: [--appellation|--date-achat|--millesime|--nom|--numero|--prix|--cle=CLE] [--reverse]
+#
+# Valeur par defaut si options omises:
+#   --numero
+#
+# Erreurs:
+# - argument(s) en trop
+#
+# Les cles de tri sont comme dans le devoir 1 (les memes caracteres que pour to_s/lister):
+#   I => numero
+#   D => date_achat
+#   T => type
+#   A => appellation
+#   M => millesime
+#   N => nom
+#   P => prix
+#   n => note
+#   c => commentaire
+#=================================
+desc 'Tri les enregistrements selon divers criteres'
+skips_post
+command :trier do |trier|
+  champ_pour_cle = {
+    'I' => :numero,
+    'D' => :date_achat,
+    'T' => :type,
+    'A' => :appellation,
+    'M' => :millesime,
+    'N' => :nom,
+    'P' => :prix,
+    'n' => :note,
+    'c' => :commentaire,
+  }
+  cles_de_tri = [:appellation, :date_achat, :millesime, :nom, :numero, :prix]
+
+  trier.desc "Trie selon l'appellation"; trier.switch :appellation
+  trier.desc "Trie selon la date d'achat"; trier.switch :'date-achat', :date_achat
+  trier.desc "Trie selon le millesime"; trier.switch :millesime
+  trier.desc "Trie selon le nom"; trier.switch :nom
+  trier.desc "Trie selon le numero"; trier.switch :numero
+  trier.desc "Trie selon le prix"; trier.switch :prix
+
+  trier.desc "Trie en ordre inverse"; trier.switch :reverse
+  trier.desc "Trie selon divers champs"; trier.flag :cle, must_match: /[#{champ_pour_cle.keys}]+/
+
+  trier.action do |_global_options,options,_args|
+    cles = cles_de_tri.select { |c| options[c] }.reduce([], :<<)
+
+    if options[:cle]
+      cles += options[:cle].chars.map { |c| champ_pour_cle[c] }.reduce([], :<<)
+    end
+
+    emettre_sur_stdout( ENTREPOT.trier( cles, options[:reverse] ) )
+  end
+end
+
+#=================================
+# Commande lister
+#
+# Arguments: [--court|--long|--format=un_format]
+#
+# Valeur par defaut si option omise:
+#   --long
+#
+# Erreurs:
+# - argument(s) en trop
+#=================================
+desc 'Liste l\'ensemble des vins de la cave a vins'
+skips_post
+command [:lister, :ls] do |lister|
+  FORMAT_COURT = '%I [%.2P$]: %A %M, %N'
+  FORMAT_LONG  = '%I [%T - %.2P$]: %A %M, %N (%D) => %n {%c}'
+
+  lister.desc 'Affiche au format court'
+  lister.switch :court
+
+  lister.desc 'Affiche au format long'
+  lister.switch :long
+
+  lister.desc 'Affiche avec un format specifique'
+  lister.flag :format
+
+  lister.action do |_global_options,options,_args|
+    option = [:court, :long, :format].select { |opt| options[opt] }
+    option = [:long] if option.empty?
+    le_format = case option.shift
+                when :court  then FORMAT_COURT
+                when :long   then FORMAT_LONG
+                when :format then options[:format]
+                end
+    erreur "lister: trop d'options indiquees: #{option}" unless option.empty?
+
+    print ENTREPOT.les_vins.map { |e| e.to_s(le_format) << "\n" }.join
+  end
+end
+
+
+
+###################################################
+# METHODES AUXILIAIRES.
+###################################################
+
+##################################################################
+# Methodes auxiliaires pour lecture de numeros et vins via stdin.
+##################################################################
+
+# Retourne les informations sur un vin lu sur une ligne, y compris
+# possiblement une quantite.
+#
+def vin_lu_sur_ligne( ligne )
+  # On utilise local_variable_set pour eviter d'avoir a faire un case
+  # sur les noms d'option utilisees ou sur les divers champs lus. Une
+  # fois definie ainsi, la variable peut etre utilisee normalement.
+
+  # On identifie les flags, qui peuvent aussi etre presents sur la ligne.
+  qte = type = nil
+  while m = /^\s*--(qte|type)=(\d+|\w+)\s*/.match(ligne)
+    binding.local_variable_set m[1], m[2]
+    ligne = m.post_match
+  end
+
+  # Puis on identifie les differents arguments specifiant un vin.
+  appellation = millesime = nom = prix = nil
+  [:appellation, :millesime, :nom, :prix].each do |champ|
+    if m = /\s*(#{GV::Motifs.const_get champ.upcase})/.match(ligne)
+      binding.local_variable_set champ, m[1]
+      ligne = m.post_match
+    else
+      erreur "Nombre invalide pour #{champ}: #{ligne}" if [:millesime, :prix].include?(champ)
+    end
+  end
+
+  erreur_nombre_incorrect_arguments :ajouter, ligne unless m.post_match.empty?
+
+  [qte, type, chaine_sans_guillemets(appellation), millesime, chaine_sans_guillemets(nom), prix]
+end
+
+# Identifie les vins a ajouter, sur la ligne de commande si des
+# arguments ont ete specifies (dans args), sinon sur stdin.
+#
+def vins_a_ajouter( args )
+  if args.empty?
+    STDIN.readlines
+      .reject { |ligne| ligne.strip.empty? }
+      .map { |ligne| vin_lu_sur_ligne( ligne.chomp ) }
+  else
+    [vin_lu_sur_ligne(args.join(" "))]
+  end
+end
+
+
+# Retourne le numero de vin sur une ligne, en faisant les validations
+# appropriees.
+#
+def numero_lu_sur_ligne( ligne )
+  m = /\b#{GV::Motifs::NUM_VIN}\b/.match( ligne.strip )
+
+  erreur "Format de donnees incorrect: numero '#{ligne}' =~ '#{GV::Motifs::NUM_VIN.inspect}'." unless m
+  erreur_nombre_incorrect_arguments :supprimer, ligne unless m.post_match.empty?
+
+  m[0].to_i
+end
+
+# Identifie les numeros de vin a supprimer, sur la ligne de commande
+# si des arguments ont ete specifies (dans args), sinon sur stdin.
+#
+def numeros_a_supprimer( args )
+  if args.empty?
+    # Aucun numero n'est specifie sur la ligne de commande: on lit sur stdin.
+    STDIN
+      .readlines
+      .reject { |ligne| ligne.strip.empty? }
+      .flat_map { |ligne| ligne.split.map { |chaine| numero_lu_sur_ligne(chaine.chomp) } }
+  else
+    # Un seul numero peut etre specifie sur la ligne de commande.
+    [numero_lu_sur_ligne(args.shift)]
+  end
+end
+
+# Retire les guillemets -- simples (apostrophes) ou doubles -- en
+# debut/fin de la chaine, si presents.
+def chaine_sans_guillemets( a )
+  /['"]/ =~ a[0] ? a[1..-2] : a
+end
+
+# Emet les vins sur stdout, sous la forme textuelle, comme dans la BD textuelle.
+#
+def emettre_sur_stdout( les_vins )
+  les_vins.each do |v|
+    if SEPARATEUR_BD_TEXTE
+      STDOUT.puts v.send( "to_#{FORMAT_BD_TEXTE}", SEPARATEUR_BD_TEXTE )
+    else
+      STDOUT.puts v.send( "to_#{FORMAT_BD_TEXTE}" )
+    end
+  end
+end
+
+###################################################
+# Methodes pour traitement des erreurs.
+###################################################
+
+def erreur( msg )
+  fail GV::Exception, msg
+end
+
+def erreur_trop_arguments( commande, *args )
+  erreur "#{commande}: arguments en trop: #{args.join(' ')}"
+end
+
+def erreur_nombre_incorrect_arguments( commande, *args )
+  erreur "#{commande}: nombre incorrect d'arguments: #{args.join(' ')}"
+end
+
+on_error do |exception|
+  case exception
+  when GLI::MissingRequiredArgumentsException
+    STDERR.puts "*** Erreur: arguments en trop: #{ARGV.join(' ')}"
+  when GLI::UnknownCommandArgument
+    STDERR.puts "*** Erreur: argument ou option de commande invalide: #{ARGV.join(' ')}"
+  when GV::Exception
+    STDERR.puts "*** Erreur: #{exception.message}"
+  else
+    STDERR.puts "*** Oops! Exception signalee durant l'execution de #{$0} ***"
+    STDERR.puts exception.message
+    STDERR.puts exception.inspect
+    STDERR.puts exception.backtrace
+  end
+end
+
+
+###################################################
+# Pre/post hook des commandes et lancement du programme
+###################################################
+
+COMMANDES_MODIFIANT_DEPOT = [:ajouter, :noter, :supprimer]
+
+pre do |global_options,command,_options,_args|
+  depot = global_options[:stdin] ? '-' : global_options[:depot]
+
+  if COMMANDES_MODIFIANT_DEPOT.include?(command.name)
+    erreur "Le flux stdin ne peut pas etre utilise pour la commande #{command.name}" if depot == '-'
+  end
+
+  ENTREPOT.ouvrir( depot, BD )
+
+  true
+end
+
+post do |_global_options,_command,_options,_args|
+  ENTREPOT.fermer
+end
+
+exit run(ARGV)
