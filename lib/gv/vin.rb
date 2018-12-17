@@ -47,6 +47,7 @@ module GestionVins
     # Methodes pour acces (lecture) aux attributs (readers) d'une instance.
     # @private
     attr_reader(*READERS)
+    attr_accessor(*ACCESSORS)
 
 
     # Methode de classe utilisee pour la construction, en cours
@@ -80,7 +81,7 @@ module GestionVins
       DBC.require( numero.kind_of?(Integer) && numero >= 0,
                    "Numero de vin incorrect -- doit etre un Integer non-negatif: #{numero}!?" )
       DBC.require( type.kind_of?(Symbol),
-                   "Type de vin incorrect -- doit etre un Symbol: #{type} (#{type.class})!?" )
+                   "Type d'arme incorrect -- doit etre un Symbol: #{type} (#{type.class})!?" )
       (READERS + ACCESSORS).each do |var|
         instance_variable_set "@#{var}", (binding.local_variable_get var)
       end
@@ -165,7 +166,7 @@ module GestionVins
     # le format approprie: date_achat.strftime("%d/%m/%y"),
     #
     def to_s( le_format = nil )
-      le_format ||= '%T [%T - %T]: %A %M, %T (%T) => %T {%T}' # Format long
+      le_format ||= '%-2I: %-20N (%L) - Puissance: %O' # Format long
       vrai_format, arguments = generer_format_et_args( le_format )
 
       format( vrai_format, *arguments )

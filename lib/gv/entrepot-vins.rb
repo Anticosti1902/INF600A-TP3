@@ -43,25 +43,82 @@ module GestionVins
       @bd.sauver( @depot, @les_vins )
     end
 
-    # Ajoute un vin dans la collection de vins.
+    # Equipe l'arme ou l'armure de son choix
     #
-    # @param [Symbol] type
-    # @param [String] appellation
-    # @param [Integer] millesime
-    # @param [String] nom
-    # @param [Float] prix
-    # @param [Integer] qte
+    # @param [Integer] numero
     #
     # @return [void]
     #
-    # @ensure Un ou plusieurs vins, tel que specifie par qte, ont ete
-    #         crees et ajoutes dans le depot si les diverses
+    # @ensure Un ou plusieurs armures et/ou arme, tel que specifie par numero, ont
+    #        remplacer les anciens équipements équipés dans le depot si les diverses
     #         conditions decrites dans Vin.new etaient satisfaites
     #
-    def self.ajouter( type, appellation, millesime, nom, prix, qte = 1 )
-      qte.times do
-        @les_vins << Vin.creer( type, appellation, millesime, nom, prix )
+    def self.equiper( numero )
+        equipement = numero == -1 ? remplacer_tous_equipements() : remplacer_equipement_specifique( le_vin(numero) )
+    end
+
+    #nom + puissance
+    def self.remplacer_equipement_specifique( numero )
+      liste_equipements = le_vin(numero)
+
+      nouvel_equip = equiper(liste_equipements)
+      @les_vins.map{ |equipement|
+        equipement.tete = nouvel_equip.tete
+        equipement.tetedefense = nouvel_equip.tetedefense
+        equipement.torse = nouvel_equip.torse
+        equipement.torsedefense = nouvel_equip.torsedefense
+        equipement.mains = nouvel_equip.mains
+        equipement.mainsdefense = nouvel_equip.mainsdefense
+        equipement.pantalons = nouvel_equip.pantalons
+        equipement.pantalonsdefense = nouvel_equip.pantalonsdefense
+        equipement.bottes = nouvel_equip.bottes
+        equipement.bottesdefense = nouvel_equip.bottesdefense
+        equipement.arme = nouvel_equip.arme
+        equipement.armeattaque = nouvel_equip.armeattaque
+       }
+    end
+
+    def self.remplacer_tous_equipements()
+      puts("succès")
+    end
+
+    def self.equiper(equipement)
+      numero = equipement.numero
+      puissance = equipement.puissance
+      type = equipement.type.to_s.downcase
+      nom = equipement.nom
+
+      if type == "arme"
+        equipement.send("#{type}=",  nom)
+        equipement.send("#{type}attaque=",  puissance)
+      else
+        equipement.send("#{type}=",  nom)
+        equipement.send("#{type}defense=",  puissance)
       end
+      return equipement
+    end
+
+    # Message à afficher contenant les informations du héros
+    #
+    # @return [String]
+    #
+    def self.creer_status()
+      attaque_max = calculer_attaque_max()
+      defense_max = calculer_defense_max()
+      attaque_equip = attaque_max - 10
+      defense_equip = defense_max - 10
+      status = "----------Informations générales---------\n"
+      status << "Héros: Olaf Odinkarsson\n"
+      status << "Vie max: %V\n"
+      status << "Attaque: #{attaque_max} (Base: 10 - Arme: #{attaque_equip})\n"
+      status << "Défense: #{defense_max} (Base: 10 - Armure: #{defense_equip})\n"
+      status << "----------Équipements utilisés----------\n"
+      status << "Tête      : %-20H (%1 défense)\n"
+      status << "Torse     : %-20T (%2 défense)\n"
+      status << "Mains     : %-20M (%3 défense)\n"
+      status << "Pantalons : %-20P (%4 défense)\n"
+      status << "Bottes    : %-20B (%5 défense)\n"
+      status << "Arme      : %-20W (%6 attaque)"
     end
 
     # Calcule l'attaque totale du personnage
@@ -86,29 +143,6 @@ module GestionVins
       joueur = GV::EntrepotVins.le_vin(0)
       fail ::GestionVins::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
       defense = joueur.defense + joueur.tetedefense + joueur.torsedefense + joueur.mainsdefense + joueur.pantalonsdefense + joueur.bottesdefense
-    end
-
-    # Message à afficher contenant les informations du héros
-    #
-    # @return [String]
-    #
-    def self.creer_status()
-      attaque_max = calculer_attaque_max()
-      defense_max = calculer_defense_max()
-      attaque_equip = attaque_max - 10
-      defense_equip = defense_max - 10
-      status = "----------Informations générales---------\n"
-      status << "Héros: Olaf Odinkarsson\n"
-      status << "Vie max: %V\n"
-      status << "Attaque: #{attaque_max} (Base: 10 - Arme: #{attaque_equip})\n"
-      status << "Défense: #{defense_max} (Base: 10 - Armure: #{defense_equip})\n"
-      status << "----------Équipements utilisés----------\n"
-      status << "Tête      : %-20H (%1 défense)\n"
-      status << "Torse     : %-20T (%2 défense)\n"
-      status << "Mains     : %-20M (%3 défense)\n"
-      status << "Pantalons : %-20P (%4 défense)\n"
-      status << "Bottes    : %-20B (%5 défense)\n"
-      status << "Arme      : %-20W (%6 attaque)"
     end
 
     # Supprime un vin de la collection de vins.
@@ -209,5 +243,6 @@ module GestionVins
     def self.le_vin( numero )
       @les_vins.find { |v| v.numero == numero }
     end
+
   end
 end
