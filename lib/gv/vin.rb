@@ -1,4 +1,4 @@
-module GestionVins
+module GestionEquipements
   require 'date'
   require 'json'
 

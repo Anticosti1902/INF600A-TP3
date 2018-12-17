@@ -1,4 +1,4 @@
-module GestionVins
+module GestionEquipements
 
   # Objet singleton (on dit aussi une 'machine') qui encapsule
   # l'entrepot de donnees pour les vins. Ne definit donc que des
@@ -11,7 +11,7 @@ module GestionVins
   # 'Domain-Driven Design---Tackling Complexity in the Heart of
   # Software', Addison-Wesley, 2004.
   #
-  class EntrepotVins
+  class EntrepotEquipements
 
     # Initialise l'entrepot, i.e., charge en memoire la collection de
     # vins specifiee par le depot, et ce a l'aide de la bd indiquee.
@@ -26,7 +26,7 @@ module GestionVins
     def self.ouvrir( depot, bd )
       @depot = depot
       @bd = bd
-      @les_vins = @bd.charger( depot )
+      @les_equipements = @bd.charger( depot )
     end
 
     # Ferme l'entrepot, ce qui a pour effet de le sauvegarder dans le
@@ -40,15 +40,15 @@ module GestionVins
     def self.fermer
       DBC.require( @depot && @bd, "Aucun appel prealable a ouvrir ne semble avoir ete effectue" )
 
-      @bd.sauver( @depot, @les_vins )
+      @bd.sauver( @depot, @les_equipements )
     end
 
     #nom + puissance
     def self.remplacer_equipement_specifique( numero )
-      equipement = le_vin(numero)
+      equipement = l_equipement(numero)
       nouvel_equip = equiper(equipement)
 
-      @les_vins.map{ |equipement|
+      @les_equipements.map{ |equipement|
         equipement.tete = nouvel_equip.tete
         equipement.tetedefense = nouvel_equip.tetedefense
         equipement.torse = nouvel_equip.torse
@@ -65,12 +65,12 @@ module GestionVins
     end
 
     def self.remplacer_tous_equipements()
-      max_tete = @les_vins.select{|equipment| equipment.type == :Tete}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_plaston = @les_vins.select{|equipment| equipment.type == :Plastron}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_mains = @les_vins.select{|equipment| equipment.type == :Mains}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_pantalons = @les_vins.select{|equipment| equipment.type == :Pantalons}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_bottes = @les_vins.select{|equipment| equipment.type == :Bottes}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_arme = @les_vins.select{|equipment| equipment.type == :Arme}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_tete = @les_equipements.select{|equipment| equipment.type == :Tete}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_plaston = @les_equipements.select{|equipment| equipment.type == :Plastron}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_mains = @les_equipements.select{|equipment| equipment.type == :Mains}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_pantalons = @les_equipements.select{|equipment| equipment.type == :Pantalons}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_bottes = @les_equipements.select{|equipment| equipment.type == :Bottes}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_arme = @les_equipements.select{|equipment| equipment.type == :Arme}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
       remplacer_equipement_specifique(max_tete.numero) unless max_tete.nil?
       remplacer_equipement_specifique(max_plaston.numero) unless max_plaston.nil?
       remplacer_equipement_specifique(max_mains.numero) unless max_mains.nil?
@@ -84,7 +84,6 @@ module GestionVins
       puissance = equipement.puissance
       type = equipement.type.to_s.downcase
       nom = equipement.nom
-      puts(numero)
 
       if type == "arme"
         equipement.send("#{type}=",  nom)
@@ -123,11 +122,11 @@ module GestionVins
     #
     # @return [Integer]
     #
-    # @raise [::GestionVins::Exception] si le fichier d'entree est vide
+    # @raise [::GestionEquipements::Exception] si le fichier d'entree est vide
     #
     def self.calculer_attaque_max()
-      joueur = GV::EntrepotVins.le_vin(0)
-      fail ::GestionVins::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
+      joueur = GV::EntrepotEquipements.l_equipement(0)
+      fail ::GestionEquipements::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
       attaque = joueur.armeattaque >=1 ? joueur.attaque + joueur.armeattaque : joueur.attaque
     end
 
@@ -135,11 +134,11 @@ module GestionVins
     #
     # @return [Integer]
     #
-    # @raise [::GestionVins::Exception] si le fichier d'entree est vide
+    # @raise [::GestionEquipements::Exception] si le fichier d'entree est vide
     #
     def self.calculer_defense_max()
-      joueur = GV::EntrepotVins.le_vin(0)
-      fail ::GestionVins::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
+      joueur = GV::EntrepotEquipements.l_equipement(0)
+      fail ::GestionEquipements::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
       defense = joueur.defense + joueur.tetedefense + joueur.torsedefense + joueur.mainsdefense + joueur.pantalonsdefense + joueur.bottesdefense
     end
 
@@ -154,21 +153,21 @@ module GestionVins
     #
     # @ensure Le vin specifie n'est plus present dans le depot
     #
-    # @raise [::GestionVins::Exception] si le vin indique n'existe pas
+    # @raise [::GestionEquipements::Exception] si le vin indique n'existe pas
     #
     def self.supprimer( vin: nil, numero: nil )
       DBC.require( vin || numero && vin.nil? || numero.nil?,
                    "#{self}.supprimer: il faut indiquer un (1) argument" )
 
       if numero
-        vin = GV::EntrepotVins.le_vin(numero)
+        vin = GV::EntrepotEquipements.l_equipement(numero)
 
-        fail ::GestionVins::Exception, "#{self}.supprimer: le vin numero #{numero} n'existe pas" unless vin
+        fail ::GestionEquipements::Exception, "#{self}.supprimer: le vin numero #{numero} n'existe pas" unless vin
       end
 
-      fail ::GestionVins::Exception, "#{self}.supprimer: le vin numero #{numero} est deja note" if vin.note?
+      fail ::GestionEquipements::Exception, "#{self}.supprimer: le vin numero #{numero} est deja note" if vin.note?
 
-      supprime = @les_vins.delete(vin)
+      supprime = @les_equipements.delete(vin)
 
       DBC.assert supprime, "#{self}.supprimer: le vin #{vin} n'existait pas dans #{self}"
     end
@@ -183,13 +182,13 @@ module GestionVins
     #
     # @ensure Le vin est maintenant note avec le commentaire indique
     #
-    # @raise [::GestionVins::Exception] si le vin indique n'existe pas ou s'il est deja note
+    # @raise [::GestionEquipements::Exception] si le vin indique n'existe pas ou s'il est deja note
     #
     def self.noter( numero, note, commentaire )
-      vin = GV::EntrepotVins.le_vin(numero)
+      vin = GV::EntrepotEquipements.l_equipement(numero)
 
-      fail ::GestionVins::Exception, "#{self}.noter: le vin numero #{numero} n'existe pas" unless vin
-      fail ::GestionVins::Exception, "#{self}.noter: le vin numero #{numero} est deja note: #{vin.note} - #{vin.commentaire}" if vin.note?
+      fail ::GestionEquipements::Exception, "#{self}.noter: le vin numero #{numero} n'existe pas" unless vin
+      fail ::GestionEquipements::Exception, "#{self}.noter: le vin numero #{numero} est deja note: #{vin.note} - #{vin.commentaire}" if vin.note?
 
       vin.noter(note, commentaire)
     end
@@ -204,7 +203,7 @@ module GestionVins
     def self.trier( cles, reverse )
       GV::Vin.comparateurs = cles.include?(:numero) ? cles : (cles << :numero)
 
-      @les_vins
+      @les_equipements
         .sort { |v1, v2| (reverse ? -1 : 1) * (v1 <=> v2) }
     end
 
@@ -222,7 +221,7 @@ module GestionVins
     #        criteres specifies. Si bus et non_bus sont true , alors tous les vins
     #
     def self.les_vins( motif: nil )
-      @les_vins
+      @les_equipements
         .select do |v|
             # Selon le motif.
             (motif.nil? || /#{motif}/i =~ v.to_s) &&
@@ -238,8 +237,8 @@ module GestionVins
     #
     # @return [Vin] le vin avec le numero indique
     #
-    def self.le_vin( numero )
-      @les_vins.find { |v| v.numero == numero }
+    def self.l_equipement( numero )
+      @les_equipements.find { |v| v.numero == numero }
     end
 
   end

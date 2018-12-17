@@ -6,7 +6,7 @@
 # active a un instant donne -- => pas d'execution concurrente.
 #
 # Composant completement independant des vins, donc n'a pas ete mis
-# dans le module GestionVins.
+# dans le module GestionEquipements.
 #
 
 class BDTexte
@@ -54,7 +54,7 @@ class BDTexte
   #
   # @ensure (le fichier n'existe pas || detruire) => le fichier existe et est vide
   #
-  # @raise [::GestionVins::Exception] si le fichier existe sans qu'on specifie l'option --detruire
+  # @raise [::GestionEquipements::Exception] si le fichier existe sans qu'on specifie l'option --detruire
   #
   def self.init( depot, detruire: false )
     if File.exist? depot
@@ -82,7 +82,7 @@ class BDTexte
   #
   # @return [Array<klass>] la collection des elements lus
   #
-  # @raise [::GestionVins::Exception] si le fichier n'existe pas
+  # @raise [::GestionEquipements::Exception] si le fichier n'existe pas
   #
   def self.charger( depot )
     fail @exception, "#{self}.charger: le fichier '#{depot}' n'existe pas!" unless depot == '-' || File.exist?(depot)

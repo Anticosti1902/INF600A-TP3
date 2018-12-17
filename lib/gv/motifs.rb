@@ -1,4 +1,4 @@
-module GestionVins
+module GestionEquipements
 
   # Motifs representant les divers attributs pour un vin.
   #

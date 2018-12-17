@@ -15,8 +15,8 @@ rescue LoadError
 end
 
 # Des alias, pour alleger le code.
-GV = GestionVins
-ENTREPOT = GestionVins::EntrepotVins
+GV = GestionEquipements
+ENTREPOT = GestionEquipements::EntrepotEquipements
 
 
 # Attributs lies au type de BD utilise.
@@ -34,9 +34,9 @@ DEPOT_DEFAUT = '.joueur.txt'     # Fichier par defaut pour depot.
 #DEPOT_DEFAUT = '.vins.json'
 
 # Injection des dependances pour la BD textuelle.
-BD.config( FORMAT_BD_TEXTE, GestionVins::Vin,
+BD.config( FORMAT_BD_TEXTE, GestionEquipements::Vin,
            separateur: SEPARATEUR_BD_TEXTE,
-           exception_a_signaler: GestionVins::Exception )
+           exception_a_signaler: GestionEquipements::Exception )
 
 
 #############################################################################

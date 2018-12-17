@@ -37,7 +37,7 @@ COMMANDES = [:init, :lister, :ajouter, :supprimer, :noter, :selectionner, :trier
 task :exemples => COMMANDES.map { |cmd| "#{cmd}_exemples".to_sym }
 
 def gv( cmd, lister_apres: nil )
-  system "cp -f test_acceptation/4vins.txt .vins.txt"
+  system "cp -f test_acceptation/4vins.txt .joueurs.txt"
   puts "*** #{GV} #{cmd} ***"
   system "#{GV} #{cmd}"
   puts
@@ -52,9 +52,9 @@ end
 
 task :lister_exemples do
   gv "lister"
-  gv "lister --court"
-  gv "lister --long"
-  gv "lister --format='%I => %N (%A)'"
+  gv "lister --status"
+  gv "lister --equipements"
+  gv "lister --format='%N (%L) - puissance: %O'"
 end
 
 task :ajouter_exemples do
@@ -137,4 +137,3 @@ task :doc do
 end
 
 #############################################################################
-
