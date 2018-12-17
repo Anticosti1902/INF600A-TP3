@@ -11,8 +11,8 @@ module GestionVins
   class Vin
     include Comparable
 
-    READERS = [:numero, :date_achat, :type, :appellation, :millesime, :nom, :prix]
-    ACCESSORS = [:note, :commentaire]
+    READERS = [:numero, :vie, :attaque, :defense, :tete, :tetedefense, :torse, :torsedefense, :mains, :mainsdefense, :pantalons, :pantalonsdefense, :bottes, :bottesdefense, :arme, :armeattaque, :type, :nom, :puissance]
+    ACCESSORS = [:numero, :vie, :attaque, :defense, :tete, :tetedefense, :torse, :torsedefense, :mains, :mainsdefense, :pantalons, :pantalonsdefense, :bottes, :bottesdefense, :arme, :armeattaque, :type, :nom, :puissance]
 
     # Attributs et methodes de classe.
     #
@@ -62,13 +62,12 @@ module GestionVins
     #
     # @return [Vin]
     #
-    def self.creer( type, appellation, millesime, nom, prix )
+    def self.creer( vie, attaque, defense, tete, tetedefense, torse, torsedefense, mains, mainsdefense, pantalons, pantalonsdefense, bottes, bottesdefense, arme, armeattaque, type, nom, puissance )
       # On definit les attributs generes.
       numero = Vin.numero_max.nil? ? 0 : Vin.numero_max + 1
-      date_achat = Time.now.to_date
 
       # On cree la nouvelle instance -- avec les bons types.
-      new( numero, date_achat, type.to_sym, appellation, millesime.to_i, nom, prix.to_f )
+      new( numero, vie.to_i, attaque.to_i, defense.to_i, tete, tetedefense.to_i, torse, torsedefense.to_i, mains, mainsdefense.to_i, pantalons, pantalonsdefense.to_i, bottes, bottesdefense.to_i, arme, armeattaque.to_i, type.to_sym, nom, puissance.to_i)
     end
 
     # Methode d'initialisation d'un vin.
@@ -76,20 +75,12 @@ module GestionVins
     # Les arguments doivent tous etre du type approprie, i.e., les
     # conversions doivent avoir ete faites au prealable.
     #
-    def initialize( numero, date_achat,
-                    type, appellation, millesime, nom, prix,
-                    note = nil, commentaire = nil )
+    def initialize( numero, vie = 100, attaque = 10, defense = 10,
+                    tete, tetedefense, torse, torsedefense, mains, mainsdefense, pantalons, pantalonsdefense, bottes, bottesdefense, arme, armeattaque, type, nom, puissance)
       DBC.require( numero.kind_of?(Integer) && numero >= 0,
                    "Numero de vin incorrect -- doit etre un Integer non-negatif: #{numero}!?" )
-      DBC.require( date_achat.kind_of?(Date),
-                   "Date d\'achat incorrecte -- doit etre une Date: #{date_achat} (#{date_achat.class})!?" )
       DBC.require( type.kind_of?(Symbol),
                    "Type de vin incorrect -- doit etre un Symbol: #{type} (#{type.class})!?" )
-      DBC.require( millesime.kind_of?(Integer) && millesime >= 0,
-                   "Millesime de vin incorrect -- doit etre un Integer non-negatif: #{millesime}!?" )
-      DBC.require( prix.kind_of?(Float) && prix >= 0.00,
-                   "Prix de vin incorrect -- doit etre un Float non-negatif: #{prix}!?" )
-
       (READERS + ACCESSORS).each do |var|
         instance_variable_set "@#{var}", (binding.local_variable_get var)
       end
@@ -98,11 +89,11 @@ module GestionVins
 
     # Est-ce que le vin a ete bu?
     #
-    def bu?
-      !@note.nil?
-    end
+    #def bu?
+    #  !@note.nil?
+    #end
 
-    alias_method :note?, :bu?
+    #alias_method :note?, :bu?
 
     # Retourne la note d'un vin ayant ete bu.
     #
@@ -110,11 +101,11 @@ module GestionVins
     #
     # @require bu?
     #
-    def note
-      DBC.require( bu?, "Vin non bu: La note n'est pas definie" )
-
-      @note
-    end
+    #def note
+    #  DBC.require( bu?, "Vin non bu: La note n'est pas definie" )
+    #
+    #  @note
+    #end
 
     # Retourne le commentaire d'un vin ayant ete bu.
     #
@@ -122,11 +113,11 @@ module GestionVins
     #
     # @require bu?
     #
-    def commentaire
-      DBC.require( bu?, "Vin non bu: Le commentaire n'est pas defini" )
+    #def commentaire
+    #  DBC.require( bu?, "Vin non bu: Le commentaire n'est pas defini" )
 
-      @commentaire
-    end
+    #  @commentaire
+    #end
 
     # Ajoute une note et un commentaire a un vin n'ayant pas encore ete
     # bu.
@@ -140,13 +131,13 @@ module GestionVins
     #
     # @ensure bu? && self.commentaire == commentaire
     #
-    def noter( note, commentaire )
-      fail "*** Dans noter( #{note}, #{commentaire} ): Vin #{numero} deja note" if note?
-      fail "*** Dans noter( #{note}, #{commentaire} ): Nombre invalide pour note: #{note}" if note < Motifs::NOTE_MIN || note > Motifs::NOTE_MAX
+    #def noter( note, commentaire )
+    #  fail "*** Dans noter( #{note}, #{commentaire} ): Vin #{numero} deja note" if note?
+    #  fail "*** Dans noter( #{note}, #{commentaire} ): Nombre invalide pour note: #{note}" if note < Motifs::NOTE_MIN || note > Motifs::NOTE_MAX
 
-      @note = note
-      @commentaire = commentaire
-    end
+    #  @note = note
+    #  @commentaire = commentaire
+    #end
 
     #
     # Formate un vin selon les indications specifiees par le_format.
@@ -174,7 +165,7 @@ module GestionVins
     # le format approprie: date_achat.strftime("%d/%m/%y"),
     #
     def to_s( le_format = nil )
-      le_format ||= '%I [%T - %.2P$]: %A %M, %N (%D) => %n {%c}' # Format long.
+      le_format ||= '%T [%T - %T]: %A %M, %T (%T) => %T {%T}' # Format long
       vrai_format, arguments = generer_format_et_args( le_format )
 
       format( vrai_format, *arguments )
@@ -210,16 +201,25 @@ module GestionVins
     #
     def to_csv( separateur = ':' )
       DBC.require( separateur.size == 1, "#{self}.to_csv: separateur invalide: #{separateur}" )
-
       [numero.to_s,
-       date_achat.strftime("%d/%m/%y"),
+       vie,
+       attaque,
+       defense,
+       tete,
+       tetedefense,
+       torse,
+       torsedefense,
+       mains,
+       mainsdefense,
+       pantalons,
+       pantalonsdefense,
+       bottes,
+       bottesdefense,
+       arme,
+       armeattaque,
        type.to_s,
-       appellation,
-       millesime.to_s,
        nom,
-       sprintf( "%.2f", prix ),
-       note? ? note.to_s : '',
-       note? ? commentaire : ''
+       puissance
       ].join(separateur)
     end
 
@@ -233,21 +233,29 @@ module GestionVins
     def self.new_from_csv( ligne, separateur = ':' )
       DBC.require( separateur.size == 1, "#{self}.new_from_csv: separateur invalide: #{separateur}" )
 
-      num_vin, date_achat, type, appellation, millesime, nom, prix, note, commentaire =
-        ligne.chomp.split(separateur, 9)
-
-      j, m, a = date_achat.split("/")
+      numero, vie, attaque, defense, tete, tetedefense, torse, torsedefense, mains, mainsdefense, pantalons, pantalonsdefense, bottes, bottesdefense, arme, armeattaque, type, nom, puissance =
+        ligne.chomp.split(separateur, 19)
 
       # Un appel a new doit recevoir les divers champs avec les types appropries.
-      new( num_vin.to_i,
-           Date.new( 2000 + a.to_i, m.to_i, j.to_i ),
+      new( numero.to_i,
+           vie.to_i,
+           attaque.to_i,
+           defense.to_i,
+           tete,
+           tetedefense.to_i,
+           torse,
+           torsedefense.to_i,
+           mains,
+           mainsdefense.to_i,
+           pantalons,
+           pantalonsdefense.to_i,
+           bottes,
+           bottesdefense.to_i,
+           arme,
+           armeattaque.to_i,
            type.to_sym,
-           appellation,
-           millesime.to_i,
            nom,
-           prix.to_f,
-           note.empty? ? nil : note.to_i,
-           commentaire.empty? ? nil : commentaire )
+           puissance.to_i )
     end
 
     #
@@ -272,15 +280,12 @@ module GestionVins
       hash = JSON.parse( json_hash )
 
       # On "corrige" le type de certains des champs.
-      a, m, j = hash["date_achat"].split("-").map(&:to_i)
-      hash["date_achat"] = Date.new( a.to_i, m.to_i, j.to_i )
       hash["type"] = hash["type"].to_sym
 
       new( *(READERS + ACCESSORS).map(&:to_s).map { |k| hash[k] } )
     end
 
 
-    private
 
     #
     # Genere le format "standard" avec les arguments requis pour le
@@ -322,14 +327,24 @@ module GestionVins
     def vrai_format_et_valeur
       {
         'I' => ['d', numero],
-        'D' => ['s', date_achat.strftime("%d/%m/%y")],
-        'T' => ['s', type],
-        'A' => ['s', appellation],
-        'M' => ['d', millesime],
+        'V' => ['d', vie],
+        'A' => ['d', attaque],
+        'D' => ['d', defense],
+        'H' => ['s', tete],
+        '1' => ['s', tetedefense],
+        'T' => ['s', torse],
+        '2' => ['s', torsedefense],
+        'M' => ['s', mains],
+        '3' => ['s', mainsdefense],
+        'P' => ['s', pantalons],
+        '4' => ['s', pantalonsdefense],
+        'B' => ['s', bottes],
+        '5' => ['s', bottesdefense],
+        'W' => ['s', arme],
+        '6' => ['s', armeattaque],
+        'L' => ['s', type],
         'N' => ['s', nom],
-        'P' => ['f', prix],
-        'n' => (note? ? ['d', note] : ['s', '']),
-        'c' => ['s', note? ? commentaire : ''],
+        'O' => ['d', puissance],
       }
     end
   end

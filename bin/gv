@@ -25,7 +25,7 @@ BD = BDTexte
 # BD textuelle style CSV, avec separateur = ":"
 FORMAT_BD_TEXTE = :csv
 SEPARATEUR_BD_TEXTE = ':'
-DEPOT_DEFAUT = '.vins.txt'     # Fichier par defaut pour depot.
+DEPOT_DEFAUT = '.joueur.txt'     # Fichier par defaut pour depot.
 
 
 # BD textuelle style JSON.
@@ -102,33 +102,33 @@ end
 # - nombre invalide pour le prix (99.99)
 # - argument(s) en trop
 #=================================
-desc 'Ajoute un vin dans la cave a vins'
-arg_name 'appellation millesime nom prix'
-command :ajouter do |ajouter|
-  ajouter.desc 'Nombre de bouteilles a ajouter'
-  ajouter.flag :qte, must_match: /\b[1-9][0-9]*\b/
+#desc 'Ajoute un vin dans la cave a vins'
+#arg_name 'appellation millesime nom prix'
+#command :ajouter do |ajouter|
+#  ajouter.desc 'Nombre de bouteilles a ajouter'
+#  ajouter.flag :qte, must_match: /\b[1-9][0-9]*\b/
 
-  ajouter.desc 'Type de vin a ajouter'
-  ajouter.flag :type
+#  ajouter.desc 'Type de vin a ajouter'
+#  ajouter.flag :type
 
-  ajouter.action do |_global_options,options,args|
-    erreur_trop_arguments :ajouter, *args if args.size > 4
-    erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 4
+#  ajouter.action do |_global_options,options,args|
+#    erreur_trop_arguments :ajouter, *args if args.size > 4
+#    erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 4
 
-    qte_defaut = options[:qte] || 1
-    type_defaut = options[:type] || :rouge
+#    qte_defaut = options[:qte] || 1
+#    type_defaut = options[:type] || :rouge
 
-    vins_a_ajouter(args).each do |qte, type, appellation, millesime, nom, prix|
-      erreur "Nombre invalide pour millesime: #{millesime}" unless GV::Motifs::MILLESIME =~ millesime
-      erreur "Nombre invalide pour prix: #{prix}" unless GV::Motifs::PRIX =~ prix
+#    vins_a_ajouter(args).each do |qte, type, appellation, millesime, nom, prix|
+#      erreur "Nombre invalide pour millesime: #{millesime}" unless GV::Motifs::MILLESIME =~ millesime
+#      erreur "Nombre invalide pour prix: #{prix}" unless GV::Motifs::PRIX =~ prix
 
-      qte ||= qte_defaut
-      type ||= type_defaut
+#      qte ||= qte_defaut
+#      type ||= type_defaut
 
-      ENTREPOT.ajouter( type, appellation, millesime.to_i, nom, prix.to_f, qte.to_i )
-    end
-  end
-end
+#      ENTREPOT.ajouter( type, appellation, millesime.to_i, nom, prix.to_f, qte.to_i )
+#    end
+#  end
+#end
 
 
 #=================================
@@ -143,17 +143,17 @@ end
 # - num_vin deja note
 # - argument(s) en trop
 #=================================
-desc 'Supprime un vin'
-arg_name 'numero_vin'
-command :supprimer do |c|
-  c.action do |_global_options,_options,args|
-    erreur_trop_arguments :supprimer, *args if args.size > 1
+#desc 'Supprime un vin'
+#arg_name 'numero_vin'
+#command :supprimer do |c|
+#  c.action do |_global_options,_options,args|
+#    erreur_trop_arguments :supprimer, *args if args.size > 1
 
-    numeros_a_supprimer(args).each do |numero|
-      ENTREPOT.supprimer(numero: numero)
-    end
-  end
-end
+#    numeros_a_supprimer(args).each do |numero|
+#      ENTREPOT.supprimer(numero: numero)
+#    end
+#  end
+#end
 
 #=================================
 # Commande noter
@@ -168,25 +168,25 @@ end
 # - nombre invalide pour la note (0 a 5)
 # - argument(s) en trop
 #=================================
-desc 'Note un vin'
-arg_name 'numero_vin note commentaire'
-command :noter do |c|
-  c.action do |_global_options,_options,args|
+#desc 'Note un vin'
+#arg_name 'numero_vin note commentaire'
+#command :noter do |c|
+#  c.action do |_global_options,_options,args|
+#
+#    erreur_trop_arguments :noter, *args if args.size > 3
+#    erreur_nombre_incorrect_arguments :noter, *args if args.size < 3
+#
+#    numero_vin = args.shift.to_i
+#    note = args.shift.to_i
+#    commentaire = args.shift
 
-    erreur_trop_arguments :noter, *args if args.size > 3
-    erreur_nombre_incorrect_arguments :noter, *args if args.size < 3
+#    unless note.between?(GV::Motifs::NOTE_MIN, GV::Motifs::NOTE_MAX)
+#      erreur "noter: nombre invalide pour note: #{note}"
+#    end
 
-    numero_vin = args.shift.to_i
-    note = args.shift.to_i
-    commentaire = args.shift
-
-    unless note.between?(GV::Motifs::NOTE_MIN, GV::Motifs::NOTE_MAX)
-      erreur "noter: nombre invalide pour note: #{note}"
-    end
-
-    ENTREPOT.noter(numero_vin, note, commentaire)
-  end
-end
+#    ENTREPOT.noter(numero_vin, note, commentaire)
+#  end
+#end
 
 
 #=================================
@@ -200,30 +200,30 @@ end
 # Erreurs:
 #  - argument(s) en trop
 #=================================
-desc 'Selectionne des vins'
-arg_name 'motif'
-skips_post
-command :selectionner do |selectionner|
-  selectionner.desc 'Selectionne les vins bus'
-  selectionner.switch :bus, :negatable => false
+#desc 'Selectionne des vins'
+#arg_name 'motif'
+#skips_post
+#command :selectionner do |selectionner|
+#  selectionner.desc 'Selectionne les vins bus'
+#  selectionner.switch :bus, :negatable => false
 
-  selectionner.desc 'Selectionne les vins non-bus'
-  selectionner.switch :'non-bus', :negatable => false
+#  selectionner.desc 'Selectionne les vins non-bus'
+#  selectionner.switch :'non-bus', :negatable => false
 
-  selectionner.desc 'Selectionne tous les vins'
-  selectionner.switch :tous, :negatable => false
+#  selectionner.desc 'Selectionne tous les vins'
+#  selectionner.switch :tous, :negatable => false
 
-  selectionner.action do |_global_options,options,args|
-    motif = args.shift
-    erreur_trop_arguments :selectionner, *args unless args.empty?
+#  selectionner.action do |_global_options,options,args|
+#    motif = args.shift
+#    erreur_trop_arguments :selectionner, *args unless args.empty?
 
-    bus = options[:bus]
-    non_bus = options[:'non-bus']
-    bus = non_bus = true if options[:tous] || !bus && !non_bus # Rien de specifie => tous!
+#    bus = options[:bus]
+#    non_bus = options[:'non-bus']
+#    bus = non_bus = true if options[:tous] || !bus && !non_bus # Rien de specifie => tous!
 
-    emettre_sur_stdout( ENTREPOT.les_vins( bus: bus, non_bus: non_bus, motif: motif ) )
-  end
-end
+#    emettre_sur_stdout( ENTREPOT.les_vins( bus: bus, non_bus: non_bus, motif: motif ) )
+#  end
+#end
 
 
 #=================================
@@ -248,80 +248,81 @@ end
 #   n => note
 #   c => commentaire
 #=================================
-desc 'Tri les enregistrements selon divers criteres'
-skips_post
-command :trier do |trier|
-  champ_pour_cle = {
-    'I' => :numero,
-    'D' => :date_achat,
-    'T' => :type,
-    'A' => :appellation,
-    'M' => :millesime,
-    'N' => :nom,
-    'P' => :prix,
-    'n' => :note,
-    'c' => :commentaire,
-  }
-  cles_de_tri = [:appellation, :date_achat, :millesime, :nom, :numero, :prix]
+#desc 'Tri les enregistrements selon divers criteres'
+#skips_post
+#command :trier do |trier|
+#  champ_pour_cle = {
+#    'I' => :numero,
+#    'D' => :date_achat,
+#    'T' => :type,
+#    'A' => :appellation,
+#    'M' => :millesime,
+#    'N' => :nom,
+#    'P' => :prix,
+#    'n' => :note,
+#    'c' => :commentaire,
+#  }
+#  cles_de_tri = [:appellation, :date_achat, :millesime, :nom, :numero, :prix]
 
-  trier.desc "Trie selon l'appellation"; trier.switch :appellation
-  trier.desc "Trie selon la date d'achat"; trier.switch :'date-achat', :date_achat
-  trier.desc "Trie selon le millesime"; trier.switch :millesime
-  trier.desc "Trie selon le nom"; trier.switch :nom
-  trier.desc "Trie selon le numero"; trier.switch :numero
-  trier.desc "Trie selon le prix"; trier.switch :prix
+#  trier.desc "Trie selon l'appellation"; trier.switch :appellation
+#  trier.desc "Trie selon la date d'achat"; trier.switch :'date-achat', :date_achat
+#  trier.desc "Trie selon le millesime"; trier.switch :millesime
+#  trier.desc "Trie selon le nom"; trier.switch :nom
+#  trier.desc "Trie selon le numero"; trier.switch :numero
+#  trier.desc "Trie selon le prix"; trier.switch :prix
 
-  trier.desc "Trie en ordre inverse"; trier.switch :reverse
-  trier.desc "Trie selon divers champs"; trier.flag :cle, must_match: /[#{champ_pour_cle.keys}]+/
+#  trier.desc "Trie en ordre inverse"; trier.switch :reverse
+#  trier.desc "Trie selon divers champs"; trier.flag :cle, must_match: /[#{champ_pour_cle.keys}]+/
 
-  trier.action do |_global_options,options,_args|
-    cles = cles_de_tri.select { |c| options[c] }.reduce([], :<<)
+#  trier.action do |_global_options,options,_args|
+#    cles = cles_de_tri.select { |c| options[c] }.reduce([], :<<)
+#
+#    if options[:cle]
+#      cles += options[:cle].chars.map { |c| champ_pour_cle[c] }.reduce([], :<<)
+#    end
 
-    if options[:cle]
-      cles += options[:cle].chars.map { |c| champ_pour_cle[c] }.reduce([], :<<)
-    end
-
-    emettre_sur_stdout( ENTREPOT.trier( cles, options[:reverse] ) )
-  end
-end
+#    emettre_sur_stdout( ENTREPOT.trier( cles, options[:reverse] ) )
+#  end
+#end
 
 #=================================
 # Commande lister
 #
-# Arguments: [--court|--long|--format=un_format]
+# Arguments: [--status|--inventaire|--format=un_format]
 #
 # Valeur par defaut si option omise:
-#   --long
+#   --status
 #
 # Erreurs:
 # - argument(s) en trop
 #=================================
-desc 'Liste l\'ensemble des vins de la cave a vins'
+desc 'Affiche le status du héros ou son inventaire'
 skips_post
 command [:lister, :ls] do |lister|
-  FORMAT_COURT = '%I [%.2P$]: %A %M, %N'
-  FORMAT_LONG  = '%I [%T - %.2P$]: %A %M, %N (%D) => %n {%c}'
+  EQUIPEMENTS  = '%-20N (%L) - puissance: %O'
 
-  lister.desc 'Affiche au format court'
-  lister.switch :court
+  lister.desc 'Affiche les statistiques du héros'
+  lister.switch :status
 
-  lister.desc 'Affiche au format long'
-  lister.switch :long
+  lister.desc 'Affiche tous les équipements du héros'
+  lister.switch :inventaire
 
   lister.desc 'Affiche avec un format specifique'
   lister.flag :format
 
   lister.action do |_global_options,options,_args|
-    option = [:court, :long, :format].select { |opt| options[opt] }
-    option = [:long] if option.empty?
+    option = [:status, :inventaire, :format].select { |opt| options[opt] }
+    option = [:status] if option.empty?
+    status = ENTREPOT.creer_status()
     le_format = case option.shift
-                when :court  then FORMAT_COURT
-                when :long   then FORMAT_LONG
+    when :status  then return print ENTREPOT.les_vins[0].to_s(status) << "\n"
+                when :inventaire   then EQUIPEMENTS
                 when :format then options[:format]
                 end
     erreur "lister: trop d'options indiquees: #{option}" unless option.empty?
 
     print ENTREPOT.les_vins.map { |e| e.to_s(le_format) << "\n" }.join
+
   end
 end
 

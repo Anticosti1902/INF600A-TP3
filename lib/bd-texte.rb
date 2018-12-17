@@ -66,6 +66,13 @@ class BDTexte
       end
     end
     FileUtils.touch depot
+    f = File.open(depot, 'w')
+    f << "0:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Tete:Casque de cuir impie:2\n"
+    f << "1:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Epee rouillée:10\n"
+    f << "2:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Hache pourfendante:15\n"
+    f << "3:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Rapiere du mal:20\n"
+    f << "4:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Epee affutée:12\n"
+    f.close
   end
 
   # Obtient le contenu d'une base de donnees textuelle contenant une

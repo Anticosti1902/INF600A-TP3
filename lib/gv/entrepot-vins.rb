@@ -64,6 +64,53 @@ module GestionVins
       end
     end
 
+    # Calcule l'attaque totale du personnage
+    #
+    # @return [Integer]
+    #
+    # @raise [::GestionVins::Exception] si le fichier d'entree est vide
+    #
+    def self.calculer_attaque_max()
+      joueur = GV::EntrepotVins.le_vin(0)
+      fail ::GestionVins::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
+      attaque = joueur.armeattaque >=1 ? joueur.attaque + joueur.armeattaque : joueur.attaque
+    end
+
+    # Calcule l'armure totale du personnage
+    #
+    # @return [Integer]
+    #
+    # @raise [::GestionVins::Exception] si le fichier d'entree est vide
+    #
+    def self.calculer_defense_max()
+      joueur = GV::EntrepotVins.le_vin(0)
+      fail ::GestionVins::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
+      defense = joueur.defense + joueur.tetedefense + joueur.torsedefense + joueur.mainsdefense + joueur.pantalonsdefense + joueur.bottesdefense
+    end
+
+    # Message à afficher contenant les informations du héros
+    #
+    # @return [String]
+    #
+    def self.creer_status()
+      attaque_max = calculer_attaque_max()
+      defense_max = calculer_defense_max()
+      attaque_equip = attaque_max - 10
+      defense_equip = defense_max - 10
+      status = "----------Informations générales---------\n"
+      status << "Héros: Olaf Odinkarsson\n"
+      status << "Vie max: %V\n"
+      status << "Attaque: #{attaque_max} (Base: 10 - Arme: #{attaque_equip})\n"
+      status << "Défense: #{defense_max} (Base: 10 - Armure: #{defense_equip})\n"
+      status << "----------Équipements utilisés----------\n"
+      status << "Tête      : %-20H (%1 défense)\n"
+      status << "Torse     : %-20T (%2 défense)\n"
+      status << "Mains     : %-20M (%3 défense)\n"
+      status << "Pantalons : %-20P (%4 défense)\n"
+      status << "Bottes    : %-20B (%5 défense)\n"
+      status << "Arme      : %-20W (%6 attaque)"
+    end
+
     # Supprime un vin de la collection de vins.
     #
     # @param [Vin] vin le vin a supprimer
@@ -133,8 +180,6 @@ module GestionVins
     # Selectionne les vins de la collection qui satisfont divers
     # criteres.
     #
-    # @param [Bool] bus si on selectionne les vins bus
-    # @param [Bool] non_bus si on selectionne les vins non-bus
     # @param [Regexp] motif un motif qui doit apparaitre
     #                 dans la representation textuelle (to_s) du vin
     #
@@ -144,14 +189,10 @@ module GestionVins
     # @return [Array<Vin>] la liste des vins qui satisfont les
     #        criteres specifies. Si bus et non_bus sont true , alors tous les vins
     #
-    def self.les_vins( bus: nil, non_bus: nil, motif: nil )
-      tous_les_vins = (bus.nil? && non_bus.nil?) || (bus && non_bus)
-
+    def self.les_vins( motif: nil )
       @les_vins
         .select do |v|
-            # Selection en fonction de --bus/--non-bus.
-            (tous_les_vins || (bus && v.bu?) || (non_bus && !v.bu?)) &&
-            # Puis selon le motif.
+            # Selon le motif.
             (motif.nil? || /#{motif}/i =~ v.to_s) &&
             # Puis en fonction du bloc, si present.
             (block_given? ? yield(v) : v)
