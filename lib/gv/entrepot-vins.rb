@@ -43,25 +43,11 @@ module GestionVins
       @bd.sauver( @depot, @les_vins )
     end
 
-    # Equipe l'arme ou l'armure de son choix
-    #
-    # @param [Integer] numero
-    #
-    # @return [void]
-    #
-    # @ensure Un ou plusieurs armures et/ou arme, tel que specifie par numero, ont
-    #        remplacer les anciens équipements équipés dans le depot si les diverses
-    #         conditions decrites dans Vin.new etaient satisfaites
-    #
-    def self.equiper( numero )
-        equipement = numero == -1 ? remplacer_tous_equipements() : remplacer_equipement_specifique( le_vin(numero) )
-    end
-
     #nom + puissance
     def self.remplacer_equipement_specifique( numero )
-      liste_equipements = le_vin(numero)
+      equipement = le_vin(numero)
+      nouvel_equip = equiper(equipement)
 
-      nouvel_equip = equiper(liste_equipements)
       @les_vins.map{ |equipement|
         equipement.tete = nouvel_equip.tete
         equipement.tetedefense = nouvel_equip.tetedefense
@@ -79,7 +65,18 @@ module GestionVins
     end
 
     def self.remplacer_tous_equipements()
-      puts("succès")
+      max_tete = @les_vins.select{|equipment| equipment.type == :Tete}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_plaston = @les_vins.select{|equipment| equipment.type == :Plastron}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_mains = @les_vins.select{|equipment| equipment.type == :Mains}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_pantalons = @les_vins.select{|equipment| equipment.type == :Pantalons}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_bottes = @les_vins.select{|equipment| equipment.type == :Bottes}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_arme = @les_vins.select{|equipment| equipment.type == :Arme}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      remplacer_equipement_specifique(max_tete.numero) unless max_tete.nil?
+      remplacer_equipement_specifique(max_plaston.numero) unless max_plaston.nil?
+      remplacer_equipement_specifique(max_mains.numero) unless max_mains.nil?
+      remplacer_equipement_specifique(max_pantalons.numero) unless max_pantalons.nil?
+      remplacer_equipement_specifique(max_bottes.numero) unless max_bottes.nil?
+      remplacer_equipement_specifique(max_arme.numero) unless max_arme.nil?
     end
 
     def self.equiper(equipement)
@@ -87,6 +84,7 @@ module GestionVins
       puissance = equipement.puissance
       type = equipement.type.to_s.downcase
       nom = equipement.nom
+      puts(numero)
 
       if type == "arme"
         equipement.send("#{type}=",  nom)

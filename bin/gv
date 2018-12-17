@@ -113,15 +113,19 @@ command :equiper do |equiper|
   equiper.switch :meilleur
 
   equiper.action do |_global_options,options,args|
+    option = [:numero, :meilleur].select { |opt| options[opt] }
+    option = [:meilleur] if option.empty?
     erreur_trop_arguments :ajouter, *args if args.size > 1
     erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 2
 
-    numero = options[:numero] || -1
+    numero = options[:numero]
+    le_format = case option.shift
+      when :numero then ENTREPOT.remplacer_equipement_specifique( numero.to_i )
+      when :meilleur then ENTREPOT.remplacer_tous_equipements()
 
-    ENTREPOT.remplacer_equipement_specifique( numero.to_i )
+    end
   end
 end
-
 
 #=================================
 # Commande supprimer
