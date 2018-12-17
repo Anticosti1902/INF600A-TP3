@@ -43,6 +43,54 @@ module GestionEquipements
       @bd.sauver( @depot, @les_equipements )
     end
 
+    def self.jouer
+      goblin_vie = 50
+      goblin_attaque = calculer_attaque_max() * 0.5
+      goblin_defense = calculer_defense_max() * 0.1
+      goblin_choix = :attaquer
+
+      heros = l_equipement(0)
+      heros_vie = heros.vie
+      heros_choix = :attaquer
+      tour = 1
+
+      goblin_vrai_attaque = goblin_attaque - heros.defense >= 5 ? goblin_attaque - heros.defense : 5
+      heros_vrai_attaque = heros.attaque - goblin_defense >= 5 ? heros.attaque - goblin_defense : 5
+
+      puts("Un goblin approche!\n")
+      puts("Vie: #{goblin_vie}\n")
+      puts("Attaque: #{goblin_attaque.to_i}\n")
+      puts("Defense: #{goblin_defense.to_i}\n")
+      while heros_vie > 0 && goblin_vie > 0 do
+        puts("----------------------------------------------------------Tour #{tour}-----------------------------------------------------------")
+        tour = tour + 1
+        if(goblin_choix == :attaquer && heros_choix == :attaquer) then
+          heros_vie = heros_vie.to_i - goblin_vrai_attaque.to_i
+          goblin_vie = goblin_vie.to_i - heros_vrai_attaque.to_i
+          puts("Le goblin attaque et effectue #{goblin_vrai_attaque.to_i} de dommage au heros. Vie restante au heros: #{heros_vie.to_i}")
+          puts("Le heros attaque et effectue #{heros_vrai_attaque.to_i} de dommage au goblin. Vie restante au goblin: #{goblin_vie.to_i}")
+        end
+        if(goblin_choix == :attaquer && heros_choix == :defendre) then
+          heros_vie = heros_vie.to_i - goblin_vrai_attaque.to_i / 2
+          puts("Le goblin attaque, mais le valeureux heros se defend, ne subissant que #{goblin_vrai_attaque.to_i / 2} de dommages. Vie restante au heros: #{heros_vie.to_i}")
+        end
+        if(goblin_choix == :defendre && heros_choix == :attaquer) then
+          goblin_vie = goblin_vie.to_i - heros_vrai_attaque.to_i / 2
+          puts("Le heros attaque, mais le goblin voit venir le coup et ne subit que #{heros_vrai_attaque.to_i / 2} de dommages. Vie restante au goblin: #{goblin_vie.to_i}")
+        end
+        if(goblin_choix == :defendre && heros_choix == :defendre) then
+          puts("Les deux ennemis se regardent et s'etudient, mais personne n'ose bouger")
+        end
+        puts("")
+        goblin_choix = action()
+        heros_choix = action()
+      end
+    end
+
+    def self.action()
+        action = rand(1..2) == 1 ? :attaquer : :defendre
+    end
+
     #nom + puissance
     def self.remplacer_equipement_specifique( numero )
       equipement = l_equipement(numero)

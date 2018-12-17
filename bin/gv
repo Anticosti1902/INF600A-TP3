@@ -88,18 +88,14 @@ end
 #=================================
 # Commande equiper
 #
-# Arguments: [--qte=99] [--type=chaine] appellation millesime nom prix
+# Arguments: [--numero=99] [--meilleur]
 #
 # Valeurs par defaut si options omises:
-#   --qte=1
-#   --type=rouge
+#   --numero=-1
 #
 # Erreurs:
 # - depot invalide (- ne peut pas etre utilise)
 # - nombre incorrect d'arguments
-# - nombre invalide pour la quantite
-# - nombre invalide pour le millesime
-# - nombre invalide pour le prix (99.99)
 # - argument(s) en trop
 #=================================
 desc 'Equiper une pièce d\'équipement'
@@ -118,7 +114,7 @@ command :equiper do |equiper|
     erreur_trop_arguments :ajouter, *args if args.size > 1
     erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 2
 
-    numero = options[:numero]
+    numero = options[:numero] || -1
     le_format = case option.shift
       when :numero then ENTREPOT.remplacer_equipement_specifique( numero.to_i )
       when :meilleur then ENTREPOT.remplacer_tous_equipements()
@@ -128,98 +124,20 @@ command :equiper do |equiper|
 end
 
 #=================================
-# Commande supprimer
-#
-# Arguments: num_vin
-#
-# Erreurs:
-# - depot invalide (- ne peut pas etre utilise)
-# - nombre incorrect d'arguments
-# - num_vin inexistant
-# - num_vin deja note
-# - argument(s) en trop
-#=================================
-#desc 'Supprime un vin'
-#arg_name 'numero_vin'
-#command :supprimer do |c|
-#  c.action do |_global_options,_options,args|
-#    erreur_trop_arguments :supprimer, *args if args.size > 1
-
-#    numeros_a_supprimer(args).each do |numero|
-#      ENTREPOT.supprimer(numero: numero)
-#    end
-#  end
-#end
-
-#=================================
-# Commande noter
-#
-# Arguments: numero_vin note commentaire
-#
-# Erreurs:
-# - depot invalide (- ne peut pas etre utilise)
-# - nombre incorrect d'arguments
-# - vin avec le numero n'existe pas
-# - vin deja note
-# - nombre invalide pour la note (0 a 5)
-# - argument(s) en trop
-#=================================
-#desc 'Note un vin'
-#arg_name 'numero_vin note commentaire'
-#command :noter do |c|
-#  c.action do |_global_options,_options,args|
-#
-#    erreur_trop_arguments :noter, *args if args.size > 3
-#    erreur_nombre_incorrect_arguments :noter, *args if args.size < 3
-#
-#    numero_vin = args.shift.to_i
-#    note = args.shift.to_i
-#    commentaire = args.shift
-
-#    unless note.between?(GV::Motifs::NOTE_MIN, GV::Motifs::NOTE_MAX)
-#      erreur "noter: nombre invalide pour note: #{note}"
-#    end
-
-#    ENTREPOT.noter(numero_vin, note, commentaire)
-#  end
-#end
-
-
-#=================================
-# Commande selectionner
-#
-# Arguments: [--bus|--non-bus|--tous] [motif]
-#
-# Valeur par defaut si options et motif omis:
-#   --tous
+# Commande jouer
 #
 # Erreurs:
 #  - argument(s) en trop
 #=================================
-#desc 'Selectionne des vins'
-#arg_name 'motif'
-#skips_post
-#command :selectionner do |selectionner|
-#  selectionner.desc 'Selectionne les vins bus'
-#  selectionner.switch :bus, :negatable => false
-
-#  selectionner.desc 'Selectionne les vins non-bus'
-#  selectionner.switch :'non-bus', :negatable => false
-
-#  selectionner.desc 'Selectionne tous les vins'
-#  selectionner.switch :tous, :negatable => false
-
-#  selectionner.action do |_global_options,options,args|
-#    motif = args.shift
-#    erreur_trop_arguments :selectionner, *args unless args.empty?
-
-#    bus = options[:bus]
-#    non_bus = options[:'non-bus']
-#    bus = non_bus = true if options[:tous] || !bus && !non_bus # Rien de specifie => tous!
-
-#    emettre_sur_stdout( ENTREPOT.les_vins( bus: bus, non_bus: non_bus, motif: motif ) )
-#  end
-#end
+desc 'Permet de combattre avec son héros'
+skips_post
+command :jouer do |jouer|
+  jouer.action do |_global_options,options,args|
+    erreur_trop_arguments :ajouter, *args if args.size > 0
+    erreur_nombre_incorrect_arguments :ajouter, *args unless args.empty? || args.size == 1
+    ENTREPOT.jouer()
+  end
+end
 
 
 #=================================
@@ -460,7 +378,7 @@ end
 # Pre/post hook des commandes et lancement du programme
 ###################################################
 
-COMMANDES_MODIFIANT_DEPOT = [:equiper, :noter, :supprimer]
+COMMANDES_MODIFIANT_DEPOT = [:equiper, :noter, :supprimer, :jouer]
 
 pre do |global_options,command,_options,_args|
   depot = global_options[:stdin] ? '-' : global_options[:depot]
