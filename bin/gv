@@ -39,14 +39,14 @@ BD.config( FORMAT_BD_TEXTE, GestionEquipements::Equipement,
 
 include GLI::App
 
-program_desc "Application en ligne de commande pour gestion d'une cave a vins"
+program_desc "Application en ligne de commande pour aller battre des goblins"
 version GV::VERSION
 
 subcommand_option_handling :normal
 arguments :strict
 preserve_argv  # Pour que ARGV ne soit pas modifie -- utile en cas d'erreur pour le message.
 
-desc 'Depot de donnees a utiliser pour la cave a vins'
+desc 'Depot de donnees a utiliser pour les equipements'
 default_value DEPOT_DEFAUT
 flag :depot
 
@@ -91,14 +91,14 @@ end
 # - depot invalide (- ne peut pas etre utilise)
 # - argument(s) en trop
 #=================================
-desc 'Equiper une pièce d\'équipement'
+desc 'Equiper une pièce d\'equipement'
 arg_name 'numero'
 command :equiper do |equiper|
 
-  equiper.desc 'Numéro de l\'armure ou de l\'arme à équiper'
+  equiper.desc 'Numero de l\'armure ou de l\'arme a equiper'
   equiper.flag :numero
 
-  equiper.desc 'Équipe la meilleure armure et la meilleur arme de chaque catégorie'
+  equiper.desc 'equipe la meilleure armure et la meilleur arme de chaque categorie'
   equiper.switch :meilleur
 
   equiper.action do |_global_options,options,args|
@@ -123,7 +123,7 @@ end
 #  - argument(s) en trop
 # - nombre incorrect d'arguments
 #=================================
-desc 'Permet de combattre avec son héros'
+desc 'Permet de combattre avec son heros'
 skips_post
 command :jouer do |jouer|
   jouer.action do |_global_options,options,args|
@@ -189,15 +189,15 @@ end
 # Erreurs:
 # - argument(s) en trop
 #=================================
-desc 'Affiche le status du héros ou de son inventaire'
+desc 'Affiche le status du heros ou de son inventaire'
 skips_post
 command [:lister, :ls] do |lister|
   EQUIPEMENTS  = '%-2I: %-20N (%L) - puissance: %O'
 
-  lister.desc 'Affiche les statistiques du héros'
+  lister.desc 'Affiche les statistiques du heros'
   lister.switch :status
 
-  lister.desc 'Affiche tous les équipements du héros'
+  lister.desc 'Affiche tous les equipements du heros'
   lister.switch :inventaire
 
   lister.desc 'Affiche avec un format specifique'
