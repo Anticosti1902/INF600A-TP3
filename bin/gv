@@ -88,14 +88,13 @@ end
 #=================================
 # Commande equiper
 #
-# Arguments: [--numero=99] [--meilleur]
+# Arguments: [--numero={id}] [--meilleur]
 #
 # Valeurs par defaut si options omises:
-#   --numero=-1
+#   --meilleur
 #
 # Erreurs:
 # - depot invalide (- ne peut pas etre utilise)
-# - nombre incorrect d'arguments
 # - argument(s) en trop
 #=================================
 desc 'Equiper une pièce d\'équipement'
@@ -118,7 +117,7 @@ command :equiper do |equiper|
     le_format = case option.shift
       when :numero then ENTREPOT.remplacer_equipement_specifique( numero.to_i )
       when :meilleur then ENTREPOT.remplacer_tous_equipements()
-
+      else ENTREPOT.remplacer_tous_equipements()
     end
   end
 end
@@ -128,6 +127,7 @@ end
 #
 # Erreurs:
 #  - argument(s) en trop
+# - nombre incorrect d'arguments
 #=================================
 desc 'Permet de combattre avec son héros'
 skips_post
@@ -143,7 +143,7 @@ end
 #=================================
 # Commande trier
 #
-# Arguments: [--appellation|--date-achat|--millesime|--nom|--numero|--prix|--cle=CLE] [--reverse]
+# Arguments: [--numero|--date-type|--puissance|--cle=CLE] [--reverse]
 #
 # Valeur par defaut si options omises:
 #   --numero
@@ -151,16 +151,10 @@ end
 # Erreurs:
 # - argument(s) en trop
 #
-# Les cles de tri sont comme dans le devoir 1 (les memes caracteres que pour to_s/lister):
+# Les cles de tri:
 #   I => numero
-#   D => date_achat
-#   T => type
-#   A => appellation
-#   M => millesime
-#   N => nom
-#   P => prix
-#   n => note
-#   c => commentaire
+#   L => type
+#   O => puissance
 #=================================
 desc 'Tri les enregistrements selon divers criteres'
 skips_post
@@ -201,7 +195,7 @@ end
 # Erreurs:
 # - argument(s) en trop
 #=================================
-desc 'Affiche le status du héros ou son inventaire'
+desc 'Affiche le status du héros ou de son inventaire'
 skips_post
 command [:lister, :ls] do |lister|
   EQUIPEMENTS  = '%-2I: %-20N (%L) - puissance: %O'
@@ -231,106 +225,6 @@ command [:lister, :ls] do |lister|
   end
 end
 
-
-
-###################################################
-# METHODES AUXILIAIRES.
-###################################################
-
-##################################################################
-# Methodes auxiliaires pour lecture de numeros et vins via stdin.
-##################################################################
-
-# Retourne les informations sur un vin lu sur une ligne, y compris
-# possiblement une quantite.
-#
-def vin_lu_sur_ligne( ligne )
-  # On utilise local_variable_set pour eviter d'avoir a faire un case
-  # sur les noms d'option utilisees ou sur les divers champs lus. Une
-  # fois definie ainsi, la variable peut etre utilisee normalement.
-
-  # On identifie les flags, qui peuvent aussi etre presents sur la ligne.
-  qte = type = nil
-  while m = /^\s*--(qte|type)=(\d+|\w+)\s*/.match(ligne)
-    binding.local_variable_set m[1], m[2]
-    ligne = m.post_match
-  end
-
-  # Puis on identifie les differents arguments specifiant un vin.
-  appellation = millesime = nom = prix = nil
-  [:appellation, :millesime, :nom, :prix].each do |champ|
-    if m = /\s*(#{GV::Motifs.const_get champ.upcase})/.match(ligne)
-      binding.local_variable_set champ, m[1]
-      ligne = m.post_match
-    else
-      erreur "Nombre invalide pour #{champ}: #{ligne}" if [:millesime, :prix].include?(champ)
-    end
-  end
-
-  erreur_nombre_incorrect_arguments :ajouter, ligne unless m.post_match.empty?
-
-  [qte, type, chaine_sans_guillemets(appellation), millesime, chaine_sans_guillemets(nom), prix]
-end
-
-# Identifie les vins a ajouter, sur la ligne de commande si des
-# arguments ont ete specifies (dans args), sinon sur stdin.
-#
-def vins_a_ajouter( args )
-  if args.empty?
-    STDIN.readlines
-      .reject { |ligne| ligne.strip.empty? }
-      .map { |ligne| vin_lu_sur_ligne( ligne.chomp ) }
-  else
-    [vin_lu_sur_ligne(args.join(" "))]
-  end
-end
-
-
-# Retourne le numero de vin sur une ligne, en faisant les validations
-# appropriees.
-#
-def numero_lu_sur_ligne( ligne )
-  m = /\b#{GV::Motifs::NUM_VIN}\b/.match( ligne.strip )
-
-  erreur "Format de donnees incorrect: numero '#{ligne}' =~ '#{GV::Motifs::NUM_VIN.inspect}'." unless m
-  erreur_nombre_incorrect_arguments :supprimer, ligne unless m.post_match.empty?
-
-  m[0].to_i
-end
-
-# Identifie les numeros de vin a supprimer, sur la ligne de commande
-# si des arguments ont ete specifies (dans args), sinon sur stdin.
-#
-def numeros_a_supprimer( args )
-  if args.empty?
-    # Aucun numero n'est specifie sur la ligne de commande: on lit sur stdin.
-    STDIN
-      .readlines
-      .reject { |ligne| ligne.strip.empty? }
-      .flat_map { |ligne| ligne.split.map { |chaine| numero_lu_sur_ligne(chaine.chomp) } }
-  else
-    # Un seul numero peut etre specifie sur la ligne de commande.
-    [numero_lu_sur_ligne(args.shift)]
-  end
-end
-
-# Retire les guillemets -- simples (apostrophes) ou doubles -- en
-# debut/fin de la chaine, si presents.
-def chaine_sans_guillemets( a )
-  /['"]/ =~ a[0] ? a[1..-2] : a
-end
-
-# Emet les vins sur stdout, sous la forme textuelle, comme dans la BD textuelle.
-#
-def emettre_sur_stdout( les_vins )
-  les_vins.each do |v|
-    if SEPARATEUR_BD_TEXTE
-      STDOUT.puts v.send( "to_#{FORMAT_BD_TEXTE}", SEPARATEUR_BD_TEXTE )
-    else
-      STDOUT.puts v.send( "to_#{FORMAT_BD_TEXTE}" )
-    end
-  end
-end
 
 ###################################################
 # Methodes pour traitement des erreurs.
@@ -369,7 +263,7 @@ end
 # Pre/post hook des commandes et lancement du programme
 ###################################################
 
-COMMANDES_MODIFIANT_DEPOT = [:equiper, :noter, :supprimer, :jouer]
+COMMANDES_MODIFIANT_DEPOT = [:equiper]
 
 pre do |global_options,command,_options,_args|
   depot = global_options[:stdin] ? '-' : global_options[:depot]
