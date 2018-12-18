@@ -51,7 +51,7 @@ module GestionEquipements
       goblin_vie = 100
       attaque_hero = calculer_attaque_max()
       defense_heros = calculer_defense_max()
-      goblin_attaque = attaque_hero * 0.8
+      goblin_attaque = attaque_hero * 1.1
       goblin_defense = defense_heros * 0.8
       goblin_choix = :attaquer
 
@@ -148,7 +148,7 @@ module GestionEquipements
     #
     def self.remplacer_tous_equipements()
       max_tete = @les_equipements.select{|equipment| equipment.type == :Tete}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
-      max_plaston = @les_equipements.select{|equipment| equipment.type == :Plastron}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
+      max_plaston = @les_equipements.select{|equipment| equipment.type == :Torse}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
       max_mains = @les_equipements.select{|equipment| equipment.type == :Mains}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
       max_pantalons = @les_equipements.select{|equipment| equipment.type == :Pantalons}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
       max_bottes = @les_equipements.select{|equipment| equipment.type == :Bottes}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}

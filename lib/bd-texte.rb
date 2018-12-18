@@ -5,7 +5,7 @@
 # -- donc on suppose qu'on aura toujours une seule utilisation
 # active a un instant donne -- => pas d'execution concurrente.
 #
-# Composant completement independant des vins, donc n'a pas ete mis
+# Composant completement independant des equipements, donc n'a pas ete mis
 # dans le module GestionEquipements.
 #
 
@@ -67,11 +67,26 @@ class BDTexte
     end
     FileUtils.touch depot
     f = File.open(depot, 'w')
-    f << "0:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Tete:Casque de cuir impie:2\n"
-    f << "1:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Epee rouillée:10\n"
-    f << "2:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Hache pourfendante:15\n"
-    f << "3:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Rapiere du mal:20\n"
-    f << "4:100:10:10:Casque de cuir:1:Manteau de cuir:1:Gantelets de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Dague:1:Arme:Epee affutée:12\n"
+    f << "0:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Epee longue:1:Tete:Casque de cuir:1\n"
+    f << "1:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:1:Pantalons de cuir:1:Bottes de cuir:1:Epee longue:1:Torse:Plastron de cuir:1\n"
+    f << "2:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:2:Pantalons de cuir:5:Bottes de cuir:3:Epee longue:2:Mains:Gants de cuir:1\n"
+    f << "3:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:3:Pantalons de cuir:6:Bottes de cuir:4:Epee longue:3:Pantalons:Pantalons de cuir:1\n"
+    f << "4:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Bottes:Bottes de cuir:1\n"
+    f << "5:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Tete:Casque de fer:5\n"
+    f << "6:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Torse:Plastron de fer:5\n"
+    f << "7:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Mains:Gant de fer:5\n"
+    f << "8:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Pantalons:Pantalons de fer:5\n"
+    f << "9:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Bottes:Bottes de fer:5\n"
+    f << "10:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Tete:Casque legendaire:20\n"
+    f << "11:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Torse:Plastron legendaire:20\n"
+    f << "12:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Mains:Gants legendaires:20\n"
+    f << "13:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Pantalons:Pantalons legendaires:20\n"
+    f << "14:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Bottes:Bottes legendaires:20\n"
+    f << "15:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Arme:Epee longue:1\n"
+    f << "16:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Arme:Epee courte:5\n"
+    f << "17:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Arme:Hache de fer:25\n"
+    f << "18:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Arme:Dague en or:50\n"
+    f << "19:100:10:10:Casque de cuir:1:Plastron de cuir:1:Gants de cuir:4:Pantalons de cuir:7:Bottes de cuir:6:Epee longue:5:Arme:Arc legendaire:100\n"
     f.close
   end
 
