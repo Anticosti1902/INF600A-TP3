@@ -21,7 +21,7 @@ module GestionEquipements
     #
     # @return [void]
     #
-    # @ensure les_vins contient les vins du fichier
+    # @ensure les_equipements contient les vins du fichier
     #
     def self.ouvrir( depot, bd )
       @depot = depot
@@ -43,6 +43,10 @@ module GestionEquipements
       @bd.sauver( @depot, @les_equipements )
     end
 
+    # Affiche les resultats dela partie entre le heros et le goblin
+    #
+    # @return [void]
+    #
     def self.jouer
       goblin_vie = 50
       goblin_attaque = calculer_attaque_max() * 0.5
@@ -88,19 +92,34 @@ module GestionEquipements
       message_victoire(goblin_vie, heros_vie)
     end
 
-    def self.message_victoire()
+    # Affiche le resultat de la partie
+    #
+    # @param [Integer] la vie goblin a la fin de la partie
+    # @param [Integer] la vie du heros a la fin de la partie
+    #
+    # @return [null]
+    #
+    def self.message_victoire(goblin_vie, heros_vie)
       if goblin_vie >=0 then
-        puts("Le heros perd le combat et part en courant en pour sa vie!")
+        puts("Le heros perd le combat et part en courant en pour sa vie!\n")
       elsif heros_vie >=0 then
-        puts("Après ce qui paru etre des heures, le heros sort vainqueur du combat!")
+        puts("Après ce qui paru etre des heures, le heros sort vainqueur du combat!\n")
       end
     end
 
+    # Retourne le choix d'action a effectuer par le gboblin ou le heros
+    #
+    # @return [Symbol] le choix d'attaquer ou de defendre
+    #
     def self.action()
         action = rand(1..2) == 1 ? :attaquer : :defendre
     end
 
-    #nom + puissance
+    # Remplace un equipement par l'equipement specifie par le numero
+    #
+    # @param [Integer] le numero de l'equipement a equipe
+    #
+    #
     def self.remplacer_equipement_specifique( numero )
       equipement = l_equipement(numero)
       nouvel_equip = equiper(equipement)
@@ -121,6 +140,10 @@ module GestionEquipements
        }
     end
 
+    # Remplace tous les equipements par les meilleurs dans la liste
+    #
+    # @return [null]
+    #
     def self.remplacer_tous_equipements()
       max_tete = @les_equipements.select{|equipment| equipment.type == :Tete}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
       max_plaston = @les_equipements.select{|equipment| equipment.type == :Plastron}.reduce{|prev, current| prev.puissance > current.puissance  ? prev : current}
@@ -136,6 +159,12 @@ module GestionEquipements
       remplacer_equipement_specifique(max_arme.numero) unless max_arme.nil?
     end
 
+    # Trie les vins de la collection de vins.
+    #
+    # @param [Equipement] l'equipement a equiper
+    #
+    # @return [Equipement] l'equipement equipe
+    #
     def self.equiper(equipement)
       numero = equipement.numero
       puissance = equipement.puissance
@@ -154,7 +183,7 @@ module GestionEquipements
 
     # Message à afficher contenant les informations du héros
     #
-    # @return [String]
+    # @return [null]
     #
     def self.creer_status()
       attaque_max = calculer_attaque_max()
@@ -167,12 +196,12 @@ module GestionEquipements
       status << "Attaque: #{attaque_max} (Base: 10 - Arme: #{attaque_equip})\n"
       status << "Défense: #{defense_max} (Base: 10 - Armure: #{defense_equip})\n"
       status << "----------Équipements utilisés----------\n"
-      status << "Tête      : %-20H (%1 défense)\n"
-      status << "Torse     : %-20T (%2 défense)\n"
-      status << "Mains     : %-20M (%3 défense)\n"
-      status << "Pantalons : %-20P (%4 défense)\n"
-      status << "Bottes    : %-20B (%5 défense)\n"
-      status << "Arme      : %-20W (%6 attaque)"
+      status << "Tête      : %-30H (%1 défense)\n"
+      status << "Torse     : %-30T (%2 défense)\n"
+      status << "Mains     : %-30M (%3 défense)\n"
+      status << "Pantalons : %-30P (%4 défense)\n"
+      status << "Bottes    : %-30B (%5 défense)\n"
+      status << "Arme      : %-30W (%6 attaque)"
     end
 
     # Calcule l'attaque totale du personnage
@@ -204,17 +233,16 @@ module GestionEquipements
     # @param [Array<Symbol>] cles les champs a utiliser pour le tri
     # @param [Bool] reverse en ordre renverse (true) ou normal (false)
     #
-    # @return [Array<Vin>] la liste des vins tries selon les criteres specifies
+    # @return [Array<Equipement>] la liste des vins tries selon les criteres specifies
     #
     def self.trier( cles, reverse )
-      GV::Vin.comparateurs = cles.include?(:numero) ? cles : (cles << :numero)
+      GV::Equipement.comparateurs = cles.include?(:numero) ? cles : (cles << :numero)
 
       @les_equipements
         .sort { |v1, v2| (reverse ? -1 : 1) * (v1 <=> v2) }
     end
 
-
-    # Selectionne les vins de la collection qui satisfont divers
+    # Selectionne les equipements de la collection qui satisfont divers
     # criteres.
     #
     # @param [Regexp] motif un motif qui doit apparaitre
@@ -226,7 +254,7 @@ module GestionEquipements
     # @return [Array<Vin>] la liste des vins qui satisfont les
     #        criteres specifies. Si bus et non_bus sont true , alors tous les vins
     #
-    def self.les_vins( motif: nil )
+    def self.les_equipements( motif: nil )
       @les_equipements
         .select do |v|
             # Selon le motif.
@@ -236,16 +264,14 @@ module GestionEquipements
       end
     end
 
-
-    # Retourne le vin avec le numero indique.
+    # Retourne l'equipement avec le numero indique.
     #
     # @param [Integer] numero
     #
-    # @return [Vin] le vin avec le numero indique
+    # @return [Equipement] l'equipement' avec le numero indique
     #
     def self.l_equipement( numero )
       @les_equipements.find { |v| v.numero == numero }
     end
-
   end
 end

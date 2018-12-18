@@ -27,14 +27,8 @@ FORMAT_BD_TEXTE = :csv
 SEPARATEUR_BD_TEXTE = ':'
 DEPOT_DEFAUT = '.joueur.txt'     # Fichier par defaut pour depot.
 
-
-# BD textuelle style JSON.
-#FORMAT_BD_TEXTE = :json
-#SEPARATEUR_BD_TEXTE = nil
-#DEPOT_DEFAUT = '.vins.json'
-
 # Injection des dependances pour la BD textuelle.
-BD.config( FORMAT_BD_TEXTE, GestionEquipements::Vin,
+BD.config( FORMAT_BD_TEXTE, GestionEquipements::Equipement,
            separateur: SEPARATEUR_BD_TEXTE,
            exception_a_signaler: GestionEquipements::Exception )
 
@@ -214,13 +208,13 @@ command [:lister, :ls] do |lister|
     option = [:status] if option.empty?
     status = ENTREPOT.creer_status()
     le_format = case option.shift
-    when :status  then return print ENTREPOT.les_vins[0].to_s(status) << "\n"
+    when :status  then return print ENTREPOT.les_equipements[0].to_s(status) << "\n"
                 when :inventaire   then EQUIPEMENTS
                 when :format then options[:format]
                 end
     erreur "lister: trop d'options indiquees: #{option}" unless option.empty?
 
-    print ENTREPOT.les_vins.map { |e| e.to_s(le_format) << "\n" }.join
+    print ENTREPOT.les_equipements.map { |e| e.to_s(le_format) << "\n" }.join
 
   end
 end

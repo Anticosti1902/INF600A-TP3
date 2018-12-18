@@ -3,12 +3,12 @@ module GestionEquipements
   require 'json'
 
   #
-  # Objet pour modeliser un vin.
+  # Objet pour modeliser un equipement.
   #
   # Tous les champs d'une instance sont immuables (non modifiables) *a
-  # l'exception* des champs qui indiquent la note et le commentaire.
+  # l'exception* deVins champs qui indiquent la note et le commentaire.
   #
-  class Vin
+  class Equipement
     include Comparable
 
     READERS = [:numero, :vie, :attaque, :defense, :tete, :tetedefense, :torse, :torsedefense, :mains, :mainsdefense, :pantalons, :pantalonsdefense, :bottes, :bottesdefense, :arme, :armeattaque, :type, :nom, :puissance]
@@ -18,14 +18,14 @@ module GestionEquipements
     #
     # Une classe etant un objet, elle possede elle-meme des attributs
     # d'instance (!).  C'est ce qui est utilise ci-bas pour identifier
-    # le plus grand numero de vin rencontre (pour assurer l'unicite) et
+    # le plus grand numero de equipement rencontre (pour assurer l'unicite) et
     # pour les methodes de comparaison de l'operateur <=> (i.e., les
     # champs a utiliser pour comparer deux vins).
     #
 
     @comparateurs = [:numero] # Comparateur par defaut: juste le numero.
 
-    # Methodes de le classe Vin.
+    # Methodes de le classe Equipement.
     class << self
       # @!attribute [r] comparateurs
       # @return [Array<Symbol>]
@@ -55,23 +55,37 @@ module GestionEquipements
     # ulterieurement ajoutes a la BD lors de la fin de l'execution du
     # script.
     #
+    # @param [Integer] numero
+    # @param [Integer] vie
+    # @param [Integer] attaque
+    # @param [Integer] defense
+    # @param [String] tete
+    # @param [Integer] tetedefense
+    # @param [String] torse
+    # @param [Integer] torsedefense
+    # @param [String] mains
+    # @param [Integer] mainsdefense
+    # @param [String] pantalons
+    # @param [Integer] pantalonsdefense
+    # @param [String] bottes
+    # @param [Integer] bottesdefense
+    # @param [String] arme
+    # @param [Integer] armeattaque
     # @param [Symbol] type
-    # @param [String] appellation
-    # @param [Integer] millesime
     # @param [String] nom
-    # @param [Float] prix
+    # @param [Integer] puissance
     #
-    # @return [Vin]
+    # @return [Equipement]
     #
     def self.creer( vie, attaque, defense, tete, tetedefense, torse, torsedefense, mains, mainsdefense, pantalons, pantalonsdefense, bottes, bottesdefense, arme, armeattaque, type, nom, puissance )
       # On definit les attributs generes.
-      numero = Vin.numero_max.nil? ? 0 : Vin.numero_max + 1
+      numero = Equipement.numero_max.nil? ? 0 : Equipement.numero_max + 1
 
       # On cree la nouvelle instance -- avec les bons types.
       new( numero, vie.to_i, attaque.to_i, defense.to_i, tete, tetedefense.to_i, torse, torsedefense.to_i, mains, mainsdefense.to_i, pantalons, pantalonsdefense.to_i, bottes, bottesdefense.to_i, arme, armeattaque.to_i, type.to_sym, nom, puissance.to_i)
     end
 
-    # Methode d'initialisation d'un vin.
+    # Methode d'initialisation d'un equipement.
     #
     # Les arguments doivent tous etre du type approprie, i.e., les
     # conversions doivent avoir ete faites au prealable.
@@ -79,69 +93,17 @@ module GestionEquipements
     def initialize( numero, vie = 100, attaque = 10, defense = 10,
                     tete, tetedefense, torse, torsedefense, mains, mainsdefense, pantalons, pantalonsdefense, bottes, bottesdefense, arme, armeattaque, type, nom, puissance)
       DBC.require( numero.kind_of?(Integer) && numero >= 0,
-                   "Numero de vin incorrect -- doit etre un Integer non-negatif: #{numero}!?" )
+                   "Numero de equipement incorrect -- doit etre un Integer non-negatif: #{numero}!?" )
       DBC.require( type.kind_of?(Symbol),
                    "Type d'arme incorrect -- doit etre un Symbol: #{type} (#{type.class})!?" )
       (READERS + ACCESSORS).each do |var|
         instance_variable_set "@#{var}", (binding.local_variable_get var)
       end
-      Vin.numero_max = Vin.numero_max ? [Vin.numero_max, numero].max : numero
+      Equipement.numero_max = Equipement.numero_max ? [Equipement.numero_max, numero].max : numero
     end
 
-    # Est-ce que le vin a ete bu?
     #
-    #def bu?
-    #  !@note.nil?
-    #end
-
-    #alias_method :note?, :bu?
-
-    # Retourne la note d'un vin ayant ete bu.
-    #
-    # @return [Integer]
-    #
-    # @require bu?
-    #
-    #def note
-    #  DBC.require( bu?, "Vin non bu: La note n'est pas definie" )
-    #
-    #  @note
-    #end
-
-    # Retourne le commentaire d'un vin ayant ete bu.
-    #
-    # @return [String]
-    #
-    # @require bu?
-    #
-    #def commentaire
-    #  DBC.require( bu?, "Vin non bu: Le commentaire n'est pas defini" )
-
-    #  @commentaire
-    #end
-
-    # Ajoute une note et un commentaire a un vin n'ayant pas encore ete
-    # bu.
-    #
-    # @param [Integer] note
-    # @param [String] commentaire
-    #
-    # @return [void]
-    #
-    # @require le vin n'a pas ete bu et la note est valide.
-    #
-    # @ensure bu? && self.commentaire == commentaire
-    #
-    #def noter( note, commentaire )
-    #  fail "*** Dans noter( #{note}, #{commentaire} ): Vin #{numero} deja note" if note?
-    #  fail "*** Dans noter( #{note}, #{commentaire} ): Nombre invalide pour note: #{note}" if note < Motifs::NOTE_MIN || note > Motifs::NOTE_MAX
-
-    #  @note = note
-    #  @commentaire = commentaire
-    #end
-
-    #
-    # Formate un vin selon les indications specifiees par le_format.
+    # Formate un equipement selon les indications specifiees par le_format.
     #
     # @param [String] le_format tel que decrit plus bas
     #
@@ -162,9 +124,6 @@ module GestionEquipements
     # Des indications de largeur, justification, etc. peuvent aussi etre
     # specifiees, par exemple, %-10T, %-.10T, etc.
     #
-    # NOTE: Pour la date d'achat, voici comment convertir une Date dans
-    # le format approprie: date_achat.strftime("%d/%m/%y"),
-    #
     def to_s( le_format = nil )
       le_format ||= '%-2I: %-20N (%L) - Puissance: %O' # Format long
       vrai_format, arguments = generer_format_et_args( le_format )
@@ -175,14 +134,14 @@ module GestionEquipements
 
     #
     # Ordonne les vins selon les comparateurs (champs) specifies dans
-    # Vin.comparateurs.
+    # Equipement.comparateurs.
     #
-    # @param [Vin] autre
+    # @param [Equipement] autre
     #
     # @return [Integer] ou [-1, 0, 1].include? result
     #
     def <=>( autre )
-      Vin.comparateurs.reduce(0) do |r, champ|
+      Equipement.comparateurs.reduce(0) do |r, champ|
         r.nonzero? ? r : send(champ) <=> autre.send(champ)
       end
     end
@@ -192,7 +151,7 @@ module GestionEquipements
     #################################################################################
 
     #
-    # Produit la representation CSV d'un vin.
+    # Produit la representation CSV d'un equipement.
     #
     # @param [String] separateur le caractere a utiliser comme separateur
     #
@@ -225,11 +184,11 @@ module GestionEquipements
     end
 
     #
-    # Construit un objet Vin a partir de sa representation textuelle en format csv
+    # Construit un objet Equipement a partir de sa representation textuelle en format csv
     #
     # @param [String] ligne contenant les champs du vins en format CSV
     # @param [String] separateur
-    # @return [Vin]
+    # @return [Equipement]
     #
     def self.new_from_csv( ligne, separateur = ':' )
       DBC.require( separateur.size == 1, "#{self}.new_from_csv: separateur invalide: #{separateur}" )
@@ -258,35 +217,6 @@ module GestionEquipements
            nom,
            puissance.to_i )
     end
-
-    #
-    # Produit la representation JSON d'un vin.
-    #
-    # @return [String]
-    #
-    def to_json
-      (READERS + ACCESSORS)
-        .map { |c|  [c, instance_variable_get("@#{c}")] }
-        .to_h
-        .to_json
-    end
-
-    #
-    # Construit un objet Vin a partir de sa representation JSON.
-    #
-    # @param [String] json_hash une chaine representant le hash JSON pour un vin
-    # @return [Vin]
-    #
-    def self.new_from_json( json_hash )
-      hash = JSON.parse( json_hash )
-
-      # On "corrige" le type de certains des champs.
-      hash["type"] = hash["type"].to_sym
-
-      new( *(READERS + ACCESSORS).map(&:to_s).map { |k| hash[k] } )
-    end
-
-
 
     #
     # Genere le format "standard" avec les arguments requis pour le
