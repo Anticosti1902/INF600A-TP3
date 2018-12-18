@@ -5,6 +5,5 @@ require 'bd-texte'
 
 require 'gv/version'
 require 'gv/exceptions'
-require 'gv/motifs'
-require 'gv/vin'
-require 'gv/entrepot-vins'
+require 'gv/equipement'
+require 'gv/entrepot-equipements'
