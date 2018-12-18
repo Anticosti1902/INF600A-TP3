@@ -48,9 +48,11 @@ module GestionEquipements
     # @return [void]
     #
     def self.jouer
-      goblin_vie = 50
-      goblin_attaque = calculer_attaque_max() * 0.5
-      goblin_defense = calculer_defense_max() * 0.1
+      goblin_vie = 100
+      attaque_hero = calculer_attaque_max()
+      defense_heros = calculer_defense_max()
+      goblin_attaque = attaque_hero * 0.8
+      goblin_defense = defense_heros * 0.8
       goblin_choix = :attaquer
 
       heros = l_equipement(0)
@@ -58,8 +60,8 @@ module GestionEquipements
       heros_choix = :attaquer
       tour = 1
 
-      goblin_vrai_attaque = goblin_attaque - heros.defense >= 5 ? goblin_attaque - heros.defense : 5
-      heros_vrai_attaque = heros.attaque - goblin_defense >= 5 ? heros.attaque - goblin_defense : 5
+      goblin_vrai_attaque = goblin_attaque - defense_heros >= 5 ? goblin_attaque - defense_heros : 5
+      heros_vrai_attaque = attaque_hero - goblin_defense >= 5 ? attaque_hero - goblin_defense : 5
 
       puts("Un goblin approche!\n")
       puts("Vie: #{goblin_vie}\n")
