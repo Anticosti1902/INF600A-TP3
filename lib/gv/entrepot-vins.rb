@@ -85,6 +85,15 @@ module GestionEquipements
         goblin_choix = action()
         heros_choix = action()
       end
+      message_victoire(goblin_vie, heros_vie)
+    end
+
+    def self.message_victoire()
+      if goblin_vie >=0 then
+        puts("Le heros perd le combat et part en courant en pour sa vie!")
+      elsif heros_vie >=0 then
+        puts("Après ce qui paru etre des heures, le heros sort vainqueur du combat!")
+      end
     end
 
     def self.action()
@@ -188,57 +197,6 @@ module GestionEquipements
       joueur = GV::EntrepotEquipements.l_equipement(0)
       fail ::GestionEquipements::Exception, "#{self}.calculer_attaque_max: le fichier d'entree est vide" unless joueur
       defense = joueur.defense + joueur.tetedefense + joueur.torsedefense + joueur.mainsdefense + joueur.pantalonsdefense + joueur.bottesdefense
-    end
-
-    # Supprime un vin de la collection de vins.
-    #
-    # @param [Vin] vin le vin a supprimer
-    # @param [Integer] numero le numero du vin a supprimer
-    #
-    # @return [void]
-    #
-    # @require Exactement un parmi vin: ou numero: est specifie, pas les deux
-    #
-    # @ensure Le vin specifie n'est plus present dans le depot
-    #
-    # @raise [::GestionEquipements::Exception] si le vin indique n'existe pas
-    #
-    def self.supprimer( vin: nil, numero: nil )
-      DBC.require( vin || numero && vin.nil? || numero.nil?,
-                   "#{self}.supprimer: il faut indiquer un (1) argument" )
-
-      if numero
-        vin = GV::EntrepotEquipements.l_equipement(numero)
-
-        fail ::GestionEquipements::Exception, "#{self}.supprimer: le vin numero #{numero} n'existe pas" unless vin
-      end
-
-      fail ::GestionEquipements::Exception, "#{self}.supprimer: le vin numero #{numero} est deja note" if vin.note?
-
-      supprime = @les_equipements.delete(vin)
-
-      DBC.assert supprime, "#{self}.supprimer: le vin #{vin} n'existait pas dans #{self}"
-    end
-
-    # Note un vin de la collection de vins.
-    #
-    # @param [Integer] numero
-    # @param [Integer] note
-    # @param [String] commentaire
-    #
-    # @return [Vin] le vin avec sa nouvelle note et son commentaire
-    #
-    # @ensure Le vin est maintenant note avec le commentaire indique
-    #
-    # @raise [::GestionEquipements::Exception] si le vin indique n'existe pas ou s'il est deja note
-    #
-    def self.noter( numero, note, commentaire )
-      vin = GV::EntrepotEquipements.l_equipement(numero)
-
-      fail ::GestionEquipements::Exception, "#{self}.noter: le vin numero #{numero} n'existe pas" unless vin
-      fail ::GestionEquipements::Exception, "#{self}.noter: le vin numero #{numero} est deja note: #{vin.note} - #{vin.commentaire}" if vin.note?
-
-      vin.noter(note, commentaire)
     end
 
     # Trie les vins de la collection de vins.

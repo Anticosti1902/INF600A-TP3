@@ -162,42 +162,33 @@ end
 #   n => note
 #   c => commentaire
 #=================================
-#desc 'Tri les enregistrements selon divers criteres'
-#skips_post
-#command :trier do |trier|
-#  champ_pour_cle = {
-#    'I' => :numero,
-#    'D' => :date_achat,
-#    'T' => :type,
-#    'A' => :appellation,
-#    'M' => :millesime,
-#    'N' => :nom,
-#    'P' => :prix,
-#    'n' => :note,
-#    'c' => :commentaire,
-#  }
-#  cles_de_tri = [:appellation, :date_achat, :millesime, :nom, :numero, :prix]
+desc 'Tri les enregistrements selon divers criteres'
+skips_post
+command :trier do |trier|
+  champ_pour_cle = {
+    'I' => :numero,
+    'L' => :type,
+    'O' => :puissance,
+  }
+  cles_de_tri = [:numero, :type, :puissance]
 
-#  trier.desc "Trie selon l'appellation"; trier.switch :appellation
-#  trier.desc "Trie selon la date d'achat"; trier.switch :'date-achat', :date_achat
-#  trier.desc "Trie selon le millesime"; trier.switch :millesime
-#  trier.desc "Trie selon le nom"; trier.switch :nom
-#  trier.desc "Trie selon le numero"; trier.switch :numero
-#  trier.desc "Trie selon le prix"; trier.switch :prix
+  trier.desc "Trie selon l'identifiant"; trier.switch :numero
+  trier.desc "Trie selon le type d'equipement"; trier.switch :type
+  trier.desc "Trie selon la puissance de l'equipement"; trier.switch :puissance
 
-#  trier.desc "Trie en ordre inverse"; trier.switch :reverse
-#  trier.desc "Trie selon divers champs"; trier.flag :cle, must_match: /[#{champ_pour_cle.keys}]+/
+  trier.desc "Trie en ordre inverse"; trier.switch :reverse
+  trier.desc "Trie selon divers champs"; trier.flag :cle, must_match: /[#{champ_pour_cle.keys}]+/
 
-#  trier.action do |_global_options,options,_args|
-#    cles = cles_de_tri.select { |c| options[c] }.reduce([], :<<)
-#
-#    if options[:cle]
-#      cles += options[:cle].chars.map { |c| champ_pour_cle[c] }.reduce([], :<<)
-#    end
+  trier.action do |_global_options,options,_args|
+    cles = cles_de_tri.select { |c| options[c] }.reduce([], :<<)
 
-#    emettre_sur_stdout( ENTREPOT.trier( cles, options[:reverse] ) )
-#  end
-#end
+    if options[:cle]
+      cles += options[:cle].chars.map { |c| champ_pour_cle[c] }.reduce([], :<<)
+    end
+
+    puts(ENTREPOT.trier( cles, options[:reverse] ) )
+  end
+end
 
 #=================================
 # Commande lister
