@@ -26,6 +26,7 @@ class BDTexte
   # @require la classe klass repond au message "new_from_<<format>>"
   #          && les instances repondent au message "to_<<format>>"
   # @require separateur <=> format == :csv
+  # @author: Guy Tremblay
   #
   def self.config( format,
                    klass,
@@ -98,6 +99,7 @@ class BDTexte
   # @return [Array<klass>] la collection des elements lus
   #
   # @raise [::GestionEquipements::Exception] si le fichier n'existe pas
+  # @author: Guy Tremblay
   #
   def self.charger( depot )
     fail @exception, "#{self}.charger: le fichier '#{depot}' n'existe pas!" unless depot == '-' || File.exist?(depot)
@@ -124,6 +126,8 @@ class BDTexte
   #
   # @ensure Un fichier existe contenant la collection de elements et une
   #         copie de sauvegarde du fichier a ete faite.
+  #
+  # @author: Guy Tremblay
   #
   def self.sauver( depot, les_elements )
     FileUtils.cp depot, "#{depot}.bak" # Copie de sauvegarde.

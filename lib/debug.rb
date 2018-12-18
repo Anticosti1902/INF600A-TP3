@@ -11,6 +11,7 @@ class Debug
   # Plus spécifiquement, le message va dans le fichier #{FICH_DEBUG},
   # à moins que la variable d'environnement FICH_DEBUG ne soit définie.
   #
+  # @author: Guy Tremblay
   def self.log( msg )
     if  ENV['DEBUG'] =~ /^(true|TRUE)/
       fich = ENV['FICH_DEBUG'] || FICH_DEBUG
@@ -21,4 +22,3 @@ class Debug
   end
 
 end
-

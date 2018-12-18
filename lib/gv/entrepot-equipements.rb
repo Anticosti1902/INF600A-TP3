@@ -23,6 +23,7 @@ module GestionEquipements
     #
     # @ensure les_equipements contient les vins du fichier
     #
+    # @author: Guy Tremblay
     def self.ouvrir( depot, bd )
       @depot = depot
       @bd = bd
@@ -37,6 +38,7 @@ module GestionEquipements
     # @require Un appel prealable a ouvrir a ete effectue
     # @ensure Les vins ont ete sauvegardes dans le depot
     #
+    # @author: Guy Tremblay
     def self.fermer
       DBC.require( @depot && @bd, "Aucun appel prealable a ouvrir ne semble avoir ete effectue" )
 

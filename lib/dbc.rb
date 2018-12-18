@@ -16,6 +16,7 @@ module DBC
   # @return [void] Aucun resultat
   # @raise DBC::Failure si la condition est fausse, aucun effet sinon
   #
+  # @author: Guy Tremblay
   def assert( condition, message = nil )
     fail "Assertion non satisfaite: #{message}" unless condition
   end
@@ -26,6 +27,7 @@ module DBC
   # @return (see #assert)
   # @raise (see #assert)
   #
+  # @author: Guy Tremblay
   def require( condition, message = nil )
     fail "Precondition non satisfaite: #{message}" unless condition
   end
@@ -36,6 +38,7 @@ module DBC
   # @return (see #assert)
   # @raise (see #assert)
   #
+  # @author: Guy Tremblay
   def ensure( condition, message = nil )
     fail "Postcondition non satisfaite: #{message}" unless condition
   end
@@ -46,6 +49,7 @@ module DBC
   # @return (see #assert)
   # @raise (see #assert)
   #
+  # @author: Guy Tremblay
   def invariant( condition, message = nil )
     fail "Invariant non satisfait: #{message}" unless condition
   end
@@ -58,6 +62,7 @@ module DBC
   # @return (see #assert)
   # @raise DBC::Failure si la valeur n'est pas du ou des types indiques, aucun effet sinon
   #
+  # @author: Guy Tremblay
   def check_type( val, expected_type, message = '*** ' )
     if expected_type.class == Array
       fail message + "Le type de #{val} n'est pas dans #{expected_type.inspect}" unless expected_type.include? val.class
@@ -74,6 +79,7 @@ module DBC
   # @return (see #assert)
   # @raise DBC::Failure si la valeur n'est pas permise, aucun effet sinon
   #
+  # @author: Guy Tremblay
   def check_value( val, expected_value, message = '*** ' )
     if expected_value.class == Array
       fail message + "Valeur #{val} pas dans #{expected_value.inspect}" unless expected_value.include? val
@@ -90,6 +96,7 @@ module DBC
   # @return (see #assert)
   # @raise DBC::Failure si un mot-cle inapproprie est present, aucun effet sinon
   #
+  # @author: Guy Tremblay
   def check_keyword_arguments( args, expected_keywords, message = '*** ' )
     invalid_kw = args.keys.select { |kw| !(expected_keywords.include? kw) }
 
